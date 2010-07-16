@@ -1,0 +1,363 @@
+// $gate: banned,v 1.3 2010/07/07 10:42:03 dukzcry Exp $
+// Sliped zones
+
+// Google //
+zone "google-analytics.com" {
+	type master;
+	file "special/banned.zones";
+};
+// Google Ads
+zone "googlesyndication.com" {
+	type master;
+	file "special/banned.zones";
+};
+// Google context ads
+zone "googleadservices.com" {
+	type master;
+	file "special/banned.zones";
+};
+// End of Google //
+
+// Last.fm ads
+zone "2mdn.net" {
+	type master;
+	file "special/banned.zones";
+};
+// Libre.fm ads
+zone "adbard.net" {
+	type master;
+	file "special/banned.zones";
+};
+// lyricstime.com banners
+zone "adreactor.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// ixbt banner host
+zone "rose.ixbt.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// following for dead torrents.ru
+zone "torrents.ru" {
+	type forward;
+        forward only;
+		forwarders { 195.82.146.50; 195.82.147.50; };
+};
+// torrents.ru ads
+zone "static.terrhq.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "b.ddestiny.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Start of Counters
+zone "counter.rambler.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// LiveInternet counter
+zone "yadro.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// LJ counter
+zone "tns-counter.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Rambler Top 100
+zone "top100-images.rambler.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// SpyLog counters
+zone "spylog.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "spylog.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "openstat.net" {
+	type master;
+	file "special/banned.zones";
+};
+zone "openstat.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+zone "hotlog.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+zone "stat.aport.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+zone "get.mycounter.ua" {
+	type master;
+	file "special/banned.zones";
+};
+
+zone "radarurl.com" {
+	type master;
+	file "special/banned.zones";
+};
+// End of Counters //
+
+// Vkontakte.ru own ads platform
+zone "adwolf.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Comicsia.ru advertisement
+zone "adriver.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Begun.ru
+zone "begun.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Yandex Advertisement Network
+zone "an.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Deviantart.com and other crappy
+// stupid ads network
+// makes thXX.deviantart.net unavailable
+//zone "edgesuite.net" {
+//	type master;
+//	file "special/banned.zones";
+//};
+zone "lfstmedia.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+zone "content.yieldmanager.edgesuite.net" {
+	type master;
+	file "special/banned.zones";
+};
+// Demonoid.com AdPerium network
+zone "adperium.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// TPB ads
+zone "ad.foxnetworks.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "cpxinteractive.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "xtendmedia.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// nnm.ru OpenX ad system
+zone "obs.nnm2.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// free-torrents.org OpenX ad system
+zone "ads.free-torrents.org" {
+	type master;
+	file "special/banned.zones";
+};
+// AdvertPay context ads
+zone "context.advertpay.net" {
+	type master;
+	file "special/banned.zones";
+};
+
+// eg.ru banners
+zone "ad.astrostar.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "c.bigmir.net" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Tematic banner networks //
+zone "hardwarez.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// End of Tematic banner networks //
+
+// QIP settings storage server
+zone "storage.qip.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// TVali.GE indexes my IP using top.ge
+zone "counter.top.ge" {
+	type master;
+	file "special/banned.zones";
+};
+zone "counter.jeje.ge" {
+	type master;
+	file "special/banned.zones";
+};
+zone "counter.internet.ge" {
+	type master;
+	file "special/banned.zones";
+};
+
+// imagepix.org (porno previews uploads)
+zone "adbrite.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// hifer.net shit
+// counters
+zone "r.i.ua" {
+	type master;
+	file "special/banned.zones";
+};
+// banners
+zone "s.clx.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// banner.ua
+zone "lux-bn.com.ua" {
+	type master;
+	file "special/banned.zones";
+};
+zone "banner.ua" {
+	type master;
+	file "special/banned.zones";
+};
+zone "kmindex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "mystat-in.net" {
+	type master;
+	file "special/banned.zones";
+};
+zone "amung.us" {
+	type master;
+	file "special/banned.zones";
+};
+
+// ifolder.ru
+zone "tbn.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "ad.agava.net" {
+	type master;
+	file "special/banned.zones";
+};
+zone "binlayer.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "bin-layer.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "adbn.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// very danger thing
+zone "s.holm.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// rnns.ru
+zone "adskape.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// MyAnimeList
+zone "admeld.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "gorillanation.com" {
+	type master;
+	file "special/banned.zones";
+};
+// MyAnimeList auditory statistics
+zone "quantcast.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "quantserve.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "scorecardresearch.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "doubleclick.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// LJ ads
+zone "adfox.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "adbureau.net" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Lenta.ru banners
+zone "ad.rambler.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "ad2.rambler.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// mail.ru shit
+zone "rs.mail.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "top.mail.ru" {
+	type master;
+	file "special/banned.zones";
+};

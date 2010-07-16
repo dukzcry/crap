@@ -1,0 +1,12 @@
+; $gate: banned.zones,v 1.3 2010/05/10 20:32:08 dukzcry Exp $
+; Prototype for zone sliping
+
+$TTL 86400
+@               IN      SOA     ns1.somehost.ru.      admin.somehost.ru. (
+                        1986042600      ;serial number
+                        86400           ;refresh
+                        3600            ;retry
+                        604800          ;expire
+                        10800 )         ;minimum
+			
+                        IN      NS      ns1.somehost.ru.
