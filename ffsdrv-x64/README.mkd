@@ -1,0 +1,14 @@
+FFS File System Driver for Windows. x64 build.
+==============================================
+FFS File System Driver enables you to read BSD FFS/UFS partitions from Windows. This project was initiated under 'ffsdrv.sourceforge.net' and was leaved by original developers circa 1997. Only 32-builds were made. This github tree is just convert from MSVC 6.0 to MSVC 2005 (because 2005 is the first release which included 64-bit compilers) with project options revised to make it possible build this driver in 64-bit mode. 
+
+
+Attention!
+----------
+This driver at the time of last release seems to support only FreeBSD (and maybe Net-?) disklabel format. OpenBSD disklabel support should be implemented. Now driver mounts only -root partition under any label combinations.
+Only driver builds in 64-bit format as required, no need to build ffsdrv's Mmanager (simple GUI frontend) in 64-bit mode, so it's not included in tree.
+
+Environment
+-----------
+You'll need MSVS 2005 and DDK 2003 (Driver Development Kit).
+"BASEDIR2K3" user macro in 'ffsdrv.vsprops' file defines placement of DDK 2003 root dir.

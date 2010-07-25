@@ -1,0 +1,19 @@
+INCLUDES=$(BASEDIR)\inc;.
+
+# Name and type of the output file:
+TARGETNAME=ffs
+TARGETTYPE=DRIVER
+TARGETPATH=.\$(DDKBUILDENV)
+
+# Creates a file used by Visual Studio to navigate the source code.
+BROWSER_INFO=TRUE
+
+RCNOFONTMAP=TRUE
+
+# The source code:
+SOURCES=ffsdrv.rc \
+        fastio.c     memory.c     close.c      dirctl.c     except.c    \
+        read.c       misc.c       devctl.c     volinfo.c    lock.c      \
+        cleanup.c    block.c      cmcb.c       fileinfo.c   dispatch.c  \
+        init.c       debug.c      create.c     ffs.c        fsctl.c     \
+        pnp.c        write.c      flush.c      shutdown.c
