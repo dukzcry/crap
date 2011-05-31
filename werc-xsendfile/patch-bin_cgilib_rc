@@ -1,0 +1,17 @@
+--- cgilib.rc		Fri Jun 11 08:28:39 2010
++++ bin/cgilib.rc	Tue May 31 16:02:39 2011
+@@ -166,9 +167,11 @@ fn get_cookie {
+ 
+ fn static_file {
+     echo 'Content-Type: '`{select_mime $1}
+-    echo
+-    cat $1
+-    exit
++    if(~ $#xsendfile 0) {
++	echo
++	cat $1
++	exit
++    }
+ }
+ 
+ fn select_mime {
