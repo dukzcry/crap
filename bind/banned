@@ -1,4 +1,4 @@
-// $gate: banned,v 1.3 2010/07/07 10:42:03 dukzcry Exp $
+// $gate: banned,v 1.6 2010/12/14 13:38:19 dukzcry Exp $
 // Sliped zones
 
 // Google //
@@ -13,6 +13,10 @@ zone "googlesyndication.com" {
 };
 // Google context ads
 zone "googleadservices.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "safebrowsing-cache.google.com" {
 	type master;
 	file "special/banned.zones";
 };
@@ -40,6 +44,11 @@ zone "rose.ixbt.com" {
 	file "special/banned.zones";
 };
 
+// disable useless retracker
+zone "retracker.local" {
+	type master;
+	file "special/banned.zones";
+};
 // following for dead torrents.ru
 zone "torrents.ru" {
 	type forward;
@@ -130,6 +139,11 @@ zone "adriver.ru" {
 	type master;
 	file "special/banned.zones";
 };
+// gamerka.me Yandex Metrics
+zone "mc.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
 
 // Begun.ru
 zone "begun.ru" {
@@ -139,6 +153,12 @@ zone "begun.ru" {
 
 // Yandex Advertisement Network
 zone "an.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// htmlbook.ru
+zone "rotaban.ru" {
 	type master;
 	file "special/banned.zones";
 };
@@ -328,6 +348,10 @@ zone "scorecardresearch.com" {
 	file "special/banned.zones";
 };
 zone "doubleclick.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "doubleclick.net" {
 	type master;
 	file "special/banned.zones";
 };
