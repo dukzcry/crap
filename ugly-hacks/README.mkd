@@ -1,0 +1,27 @@
+##mwm-title-bug.patch 
+
+Big sorry for my engrish.
+
+
+Following was copy-pasted from my post on Nekochan.net:
+
+
+So back to this problem again.
+
+Here are links to similar troubles:
+
+-> http://www.motifzone.net/forum/general-questions/mwm-title-bug
+
+-> http://www.motifzone.net/forum/xterm-title-some-russian-text
+
+
+Problem is not rely to concret toolkit with help of the application made, but appears usually when mixing a pair of russian words visually emptied with spaces with word containing other alphabet symbols.
+
+I've tested with Gtk, Qt and Athena widgets xterm :)
+
+Duping words ISN'T appears when you set LC_CTYPE with one locale to exact application while have other different system wide LC_CTYPE locale and using fonts with codepage for first locale. (e.g. have LC_CTYPE=ru_RU.CP1251 in .xinitrc or .xsession file and running firefox with "LC_CTYPE=ru_RU.KOI8-R firefox" command and using *-koi8-r font string part in your .Xdefaults).
+
+
+There are a TONS of ways how to fix it, for example you can avoid WmICCCMToXmString() in WmWinInfo.c and use standart X set (convert XProperty to text list (actually char double-pointer) and then convert it to XmString, don't forget to free memory in time and properly and avoid double frees). But than you should go along other things, as minimized titles use another procedure and produce this bug again.
+
+You can also try to change XmCvtCTToXmString() in Xm/TxtPropCv.c to XmStringCreateLocalized() and produce bug like this: http://www.mail-archive.com/fvwm-workers@lists.math.uh.edu/msg06975.html. As these titles discussed upper are converted in compound text. So bug is in XmCvtCTToXmString or producures used in it internally. I found the fast yet ugly way in logical low level (see patch). It only fix it in Xm lib and in func used for titles, so there are other ones that has this bug too, but i'm not worry, as i wanted to fix my only problem. The patch's solution is ugly because we dunno exactly what we do, so better way will be finding mwm's locale checking and add exception for own locale.
