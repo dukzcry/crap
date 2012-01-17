@@ -1,0 +1,19 @@
+$home: openmotif-png-test-pass.patch,v 1.2 2009/07/24 01:21:59 dukzcry Exp $                                                 
+# Ugly hack to pass png check that was failed                                                                                
+# due using math func while missing math lib                                                                                 
+# including                                                                                                                  
+                                                                                                                             
+--- configure.orig      Sun Jun 28 23:28:32 2009                                                                             
++++ configure   Sun Jun 28 23:28:45 2009                                                                                     
+@@ -27922,9 +27922,9 @@ then                                                                                                 
+                                                                                                                             
+     if test "$libpng_lib"                                                                                                   
+     then                                                                                                                    
+-       LIBPNG_LIBS="-L$libpng_lib -lpng"                                                                                    
++       LIBPNG_LIBS="-L$libpng_lib -lpng -lm"                                                                                
+     else                                                                                                                    
+-       LIBPNG_LIBS="-lpng"                                                                                                  
++       LIBPNG_LIBS="-lpng -lm"                                                                                              
+     fi                                                                                                                      
+                                                                                                                             
+     saved_LIBS="$LIBS"  
