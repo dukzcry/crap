@@ -1,0 +1,81 @@
+$NetBSD$
+Based on the code of Weidong Han <weidong.han@intel.com>
+
+--- ioemu-qemu-xen/hw/pass-through.c.orig       2011-02-11 17:54:51.000000000 +0000
++++ ioemu-qemu-xen/hw/pass-through.c
+@@ -1865,6 +1865,63 @@ static int pt_dev_is_virtfn(struct pci_d
+     return rc;
+ }
+ 
++#define PCI_HEADER_TYPE_ADDR        0x0e
++#define PCI_BRIDGE_FLAG             0x01
++
++#define PCI_SECOND_BUS_NUMBER_ADDR  0x19
++
++#define PCI_BRIDGE_CONTROL_ADDR     0x3e
++#define PCI_BRIDGE_VGA_ENABLE       0x18
++
++#define PCI_COMMAND                0x04
++#define PCI_COMMAND_MEMORY         0x2
++
++/*
++ * Claim vga cycle for the graphics card pass-through
++ */
++static void gfx_claim_vga_cycle(struct pci_access *pci_access, uint32_t bus)
++{
++    struct pci_dev *pci_dev;
++
++    for ( pci_dev = pci_access->devices; pci_dev != NULL; pci_dev = pci_dev->next )
++    {
++        if ( pci_read_byte(pci_dev, PCI_HEADER_TYPE_ADDR) == PCI_BRIDGE_FLAG )
++        {
++            unsigned sec_bus_num = pci_read_byte(pci_dev, PCI_SECOND_BUS_NUMBER_ADDR);
++            unsigned ubrg = pci_read_byte(pci_dev, PCI_BRIDGE_CONTROL_ADDR);
++
++            PT_LOG("bridge for bus %d, bridge control is %x\n", sec_bus_num, ubrg);
++            //PT_LOG("bus=0x%d, dev=0x%x, func=0x%x\n",pci_dev->bus,pci_dev->dev,pci_dev->func);
++
++           /* assigned VGA device's bridge */
++            if ( sec_bus_num == bus ) {
++               ubrg |= PCI_BRIDGE_VGA_ENABLE;
++               pci_write_byte(pci_dev, PCI_BRIDGE_CONTROL_ADDR, ubrg);
++               PT_LOG("\tupdated bridge control is %x\n", ubrg);
++               break;
++           }
++           else {
++               /* Other device's bridge */
++
++               /* Explicitly mark that access to ioports is off, for the safety */
++               if ( (ubrg & PCI_BRIDGE_VGA_ENABLE) == PCI_BRIDGE_VGA_ENABLE)
++                       pci_write_word(pci_dev, PCI_COMMAND,
++                               pci_read_word(pci_dev, PCI_COMMAND) & ~PCI_COMMAND_MEMORY );
++
++               //if ( (ubrg & PCI_BRIDGE_VGA_ENABLE) != PCI_BRIDGE_VGA_ENABLE) {
++                       ubrg &= ~PCI_BRIDGE_VGA_ENABLE;
++                       pci_write_byte(pci_dev, PCI_BRIDGE_CONTROL_ADDR, ubrg);
++                       //PT_LOG("\tupdated interim bridge control is %x\n", ubrg);
++                       PT_LOG("\tupdated bridge control is %x\n", ubrg);
++               //}
++          }
++        }
++    }
++
++    return 0;
++}
++
++
+ static int pt_register_regions(struct pt_dev *assigned_device)
+ {
+     int i = 0;
+@@ -4245,6 +4302,10 @@ static struct pt_dev * register_real_dev
+     /* Handle real device's MMIO/PIO BARs */
+     pt_register_regions(assigned_device);
+ 
++    /* Do the work of VGA arbiter Linux driver in simple form */
++    if ( pci_dev->device_class == 0x0300 )                                                                                                                                                   
++        gfx_claim_vga_cycle(pci_access, r_bus);
++
+     /* Setup VGA bios for passthroughed gfx */
+     if ( setup_vga_pt(assigned_device) < 0 )
+     {
+
