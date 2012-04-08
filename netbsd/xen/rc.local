@@ -1,0 +1,5 @@
+#	$xen: rc.local,v 1.3 2012/04/08 19:16:56 xen Exp $
+
+# Xen-related: there is no driver yet that did init for us, so we
+# explicitly setting both ioports and mmio to on state
+/usr/pkg/sbin/setpci -s 01:00.0 0x04.b=0x3
