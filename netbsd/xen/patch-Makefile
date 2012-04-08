@@ -31,7 +31,7 @@
 +SUBST_SED.var1=		-e "s|MAP_LOCKED|0|g"
 +
 +SUBST_CLASSES+=		var2
-+SUBST_STAGE.var1=	post-patch
++SUBST_STAGE.var2=	post-patch
 +SUBST_FILES.var2=	libxl/libxl_internal.h
 +SUBST_SED.var2=		-e "s|\(SYSFS_PCIBACK_DRIVER\).*|\1 \"/kern/xen/pci\"|"
 +
