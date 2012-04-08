@@ -2,7 +2,7 @@ $NetBSD$
 Based on the code of Weidong Han <weidong.han@intel.com>
 
 --- pass-through.c.orig	2011-02-11 17:54:51.000000000 +0000
-+++ pass-through.c
++++ ioemu-qemu-xen/hw/pass-through.c
 @@ -1865,6 +1865,60 @@ static int pt_dev_is_virtfn(struct pci_d
      return rc;
  }
