@@ -1,0 +1,52 @@
+--- Makefile.orig       2012-02-04 16:42:20.000000000 +0400
++++ Makefile    2012-04-06 19:30:51.000000000 +0400
+@@ -29,6 +29,7 @@ BUILD_DEPENDS+= ocaml-findlib-[0-9]*:../
+ .if !exists(/usr/bin/iasl)
+ BUILD_DEPENDS+= acpica-utils-[0-9]*:../../sysutils/acpica-utils
+ .endif
++BUILD_DEPENDS+= pciutils:../../sysutils/pciutils
+ 
+ PKG_SYSCONFSUBDIR=     xen
+ 
+@@ -108,14 +109,31 @@ SUBST_SED.conf=           -e "s,@XENDCONFDIR@,${P
+ 
+ XEND_SCRIPTS=          block vif-bridge vif-ip qemu-ifup hotplugpath.sh
+ 
++SUBST_CLASSES+=         sysconf                                                                                                                              
++SUBST_STAGE.sysconf=    post-patch                                                                                                      
++SUBST_FILES.sysconf=    ioemu-qemu-xen/xen-hooks.mak
++SUBST_SED.sysconf=      -e "s|/usr\(/include/pci\)|${PREFIX}\1utils|g"
++SUBST_SED.sysconf+=     -e "s|\(LIBS += -lpci\)|\1 ${PREFIX}/lib/libpciutils.a|g"
++
+ .if ${OPSYS} == "NetBSD"
+ SUBST_CLASSES+=                proc
+ SUBST_STAGE.proc=      pre-configure
+ SUBST_FILES.proc=      python/xen/xend/XendVnet.py
+ SUBST_SED.proc=                -e "s|/proc|/kern|g"
+ PROCPATH=              /kern
++
++SUBST_CLASSES+=                var1
++SUBST_STAGE.var1=      post-patch
++SUBST_FILES.var1=      ioemu-qemu-xen/hw/pt-msi.c
++SUBST_SED.var1=                -e "s|MAP_LOCKED|0|g"
++
++SUBST_CLASSES+=                var2
++SUBST_STAGE.var2=      post-patch
++SUBST_FILES.var2=      libxl/libxl_internal.h
++SUBST_SED.var2=                -e "s|\(SYSFS_PCIBACK_DRIVER\).*|\1 \"/kern/xen/pci\"|"
++
+ .else
+-PROCPATH=              /proc
++PROCPATH=               /proc
+ .endif
+ 
+ RCD_SCRIPTS=           xen-watchdog xencommons xend xendomains
+@@ -152,6 +170,8 @@ pre-build:
+            ${SED} -e "s,@XENDCONFDIR@,${PKG_SYSCONFDIR},g" \
+            >${WRKDIR}/xm.1
+ 
++       ( ln -s ${PREFIX}/include/pciutils ${WRKSRC}/ioemu-qemu-xen/hw/pci 2>/dev/null ; return 0 )
++
+ INSTALLATION_DIRS=     ${EGDIR} ${PKGMANDIR}/man5
+ 
+ post-install:
