@@ -20,7 +20,7 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/pcio.c?rev=1.24&content-type=text/plain&only_with_tag=MAIN
 
 
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/x86/x86_autoconf.c?rev=1.35&content-type=text/plain&only_with_tag=MAIN
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/x86/x86_autoconf.c?rev=1.36&content-type=text/plain&only_with_tag=MAIN
 
 Do:
 echo "time_t getsecs(void);" >> libi386.h
