@@ -1,4 +1,5 @@
-To make genfb working on NetBSD 5.1.2 release, you'll need to bring VESA support to bootloader, for this you'll need to:
+To make genfb working on NetBSD 5.1.2 release, you'll need to bring VESA support to bootloader and bring passing of screen conf
+parameters from loader to genfb, for this you'll need to:
 
 Grab:
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/boot/boot2.c?rev=1.43&content-type=text/plain
@@ -17,6 +18,9 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/include/bootinfo
 
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.c?rev=1.39&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/pcio.c?rev=1.24&content-type=text/plain&only_with_tag=MAIN
+
+
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/x86/x86_autoconf.c?rev=1.35&content-type=text/plain&only_with_tag=MAIN
 
 Do:
 echo "time_t getsecs(void);" >> libi386.h
