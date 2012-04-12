@@ -2,8 +2,8 @@ Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
 
 #+++ /sys/arch/x86/x86/x86_autoconf.c        2012-04-12 18:03:38.000000000 +0400
 --- /sys/arch/xen/x86/autoconf.c.bak	2012-04-12 16:56:49.000000000 +0400
-+++ /sys/arch/xen/x86/autoconf.c	2012-04-12 18:03:38.000000000 +0400
-@@ -89,9 +89,13 @@ __KERNEL_RCSID(0, "$NetBSD: autoconf.c,v
++++ /sys/arch/xen/x86/autoconf.c	2012-04-12 18:42:38.000000000 +0400
+@@ -89,9 +89,16 @@ __KERNEL_RCSID(0, "$NetBSD: autoconf.c,v
  #include <machine/gdt.h>
  #include <machine/pcb.h>
  #include <machine/bootinfo.h>
@@ -11,13 +11,22 @@ Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
  
  static void findroot(void);
  static int is_valid_disk(device_t);
++
++#include "pci.h"
++
 +#if NPCI > 0
 +static void x86_genfb_set_mapreg(void *, int, int, int, int);
 +#endif
  static void handle_wedges(device_t, int);
  
  struct disklist *x86_alldisks;
-@@ -223,7 +227,10 @@ findroot(void)
+@@ -217,13 +224,14 @@ findroot(void)
+ 	}
+ }
+ 
+-#include "pci.h"
+-
+ #include <dev/isa/isavar.h>
  #if NPCI > 0
  #include <dev/pci/pcivar.h>
  #endif
@@ -28,7 +37,7 @@ Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
  
  #if defined(NFS_BOOT_BOOTSTATIC) && defined(DOM0OPS)
  static int
-@@ -273,6 +280,10 @@ dom0_bootstatic_callback(struct nfs_disk
+@@ -273,6 +281,10 @@ dom0_bootstatic_callback(struct nfs_disk
  void
  device_register(device_t dev, void *aux)
  {
@@ -39,7 +48,7 @@ Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
  	/*
  	 * Handle network interfaces here, the attachment information is
  	 * not available driver independently later.
-@@ -342,6 +353,41 @@ device_register(device_t dev, void *aux)
+@@ -342,6 +354,41 @@ device_register(device_t dev, void *aux)
  		}
  #endif
  	}
@@ -81,7 +90,7 @@ Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
  	return;
  
  found:
-@@ -354,6 +400,17 @@ found:
+@@ -354,6 +401,17 @@ found:
  	booted_device = dev;
  }
  
