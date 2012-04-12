@@ -1,0 +1,101 @@
+Signed-off-by: Jared D. McNeill <jmcneill@invisible.ca>
+
+#+++ /sys/arch/x86/x86/x86_autoconf.c        2012-04-12 18:03:38.000000000 +0400
+--- /sys/arch/xen/x86/autoconf.c.bak	2012-04-12 16:56:49.000000000 +0400
++++ /sys/arch/xen/x86/autoconf.c	2012-04-12 18:03:38.000000000 +0400
+@@ -89,9 +89,13 @@ __KERNEL_RCSID(0, "$NetBSD: autoconf.c,v
+ #include <machine/gdt.h>
+ #include <machine/pcb.h>
+ #include <machine/bootinfo.h>
++#include <machine/pio.h>
+ 
+ static void findroot(void);
+ static int is_valid_disk(device_t);
++#if NPCI > 0
++static void x86_genfb_set_mapreg(void *, int, int, int, int);
++#endif
+ static void handle_wedges(device_t, int);
+ 
+ struct disklist *x86_alldisks;
+@@ -223,7 +227,10 @@ findroot(void)
+ #if NPCI > 0
+ #include <dev/pci/pcivar.h>
+ #endif
++#include <dev/wsfb/genfbvar.h>
++#include <dev/ic/vgareg.h>
+ 
++struct genfb_colormap_callback gfb_cb;
+ 
+ #if defined(NFS_BOOT_BOOTSTATIC) && defined(DOM0OPS)
+ static int
+@@ -273,6 +280,10 @@ dom0_bootstatic_callback(struct nfs_disk
+ void
+ device_register(device_t dev, void *aux)
+ {
++#if NPCI > 0
++	static bool found_console = false;
++#endif
++
+ 	/*
+ 	 * Handle network interfaces here, the attachment information is
+ 	 * not available driver independently later.
+@@ -342,6 +353,41 @@ device_register(device_t dev, void *aux)
+ 		}
+ #endif
+ 	}
++#if NPCI > 0
++	if (device_parent(dev) && device_is_a(device_parent(dev), "pci") &&
++		found_console == false) {
++			struct btinfo_framebuffer *fbinfo;
++			struct pci_attach_args *pa = aux;
++			prop_dictionary_t dict;
++
++			if (PCI_CLASS(pa->pa_class) == PCI_CLASS_DISPLAY) {
++				fbinfo = lookup_bootinfo(BTINFO_FRAMEBUFFER);
++				if (fbinfo == NULL || fbinfo->physaddr == 0)
++					return;
++				dict = device_properties(dev);
++				prop_dictionary_set_uint32(dict, "width",
++					fbinfo->width);
++				prop_dictionary_set_uint32(dict, "height",
++					 fbinfo->height);
++				prop_dictionary_set_uint8(dict, "depth",
++					 fbinfo->depth);
++				prop_dictionary_set_uint64(dict, "address",
++					 fbinfo->physaddr);	
++				prop_dictionary_set_uint16(dict, "linebytes",
++					 fbinfo->stride);
++				prop_dictionary_set_bool(dict, "is_console", true);
++
++				if (fbinfo->depth == 8) {
++					gfb_cb.gcc_cookie = NULL;
++					gfb_cb.gcc_set_mapreg = x86_genfb_set_mapreg;
++					prop_dictionary_set_uint64(dict,
++						"cmap_callback", (uint64_t)&gfb_cb);
++				}
++				found_console = true;
++				return;
++			}
++	}
++#endif
+ 	return;
+ 
+ found:
+@@ -354,6 +400,17 @@ found:
+ 	booted_device = dev;
+ }
+ 
++#if NPCI > 0
++static void
++x86_genfb_set_mapreg(void *opaque, int index, int r, int g, int b)
++{
++	outb(0x3c0 + VGA_DAC_ADDRW, index);
++	outb(0x3c0 + VGA_DAC_PALETTE, (uint8_t)r >> 2);
++	outb(0x3c0 + VGA_DAC_PALETTE, (uint8_t)g >> 2);
++	outb(0x3c0 + VGA_DAC_PALETTE, (uint8_t)b >> 2);
++}
++#endif
++
+ static void
+ handle_wedges(device_t dv, int par)
+ {
