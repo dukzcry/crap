@@ -23,8 +23,8 @@
  				    sizeof(xcp->xcp_pcidevs));
  			break;
 +		case XEN_PARSE_FRAMEBUFFER:
-+			if (strncmp(opt, "_btinfo_framebuffer_ep=0x", 25) == 0)
-+				strncpy(xcp->xcp_framebuffer, opt + 25,
++			if (strncmp(opt, "_btinfo_framebuffer_ep=", 23) == 0)
++				strncpy(xcp->xcp_framebuffer, opt + 23,
 +					sizeof(xcp->xcp_framebuffer));
 +			break;
  		}
@@ -49,7 +49,7 @@
 +                                 * kernel, not forgetting that i can't reimplement
 +                                 * MIS */
 +				snprintf(bi->path, sizeof(bi->path) - 1,
-+					"%s _btinfo_framebuffer_ep=%lx", bm->bm_path,
++					"%s _btinfo_framebuffer_ep=0x%lx", bm->bm_path,
 +				 	vtophys((struct btinfo_common *) &btinfo_framebuffer));
 +			}
 +			else
