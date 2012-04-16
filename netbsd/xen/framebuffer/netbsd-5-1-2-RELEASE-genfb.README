@@ -13,10 +13,11 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/vbe.c
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/bootmenu.h?rev=1.2&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/bootmenu.c?rev=1.2&content-type=text/plain
 
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/libi386.h?rev=1.30&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/libi386.h?rev=1.31&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/include/bootinfo.h?rev=1.15&content-type=text/plain
 
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.c?rev=1.39&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.c?rev=1.41&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/include/loadfile_machdep.h?rev=1.4&content-type=text/plain&only_with_tag=MAIN
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/pcio.c?rev=1.24&content-type=text/plain&only_with_tag=MAIN
 
 
@@ -24,5 +25,5 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/x86/x86_autoconf
 
 Do:
 echo "time_t getsecs(void);" >> libi386.h
-sed -e "/module_add(fsmod);/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" exec.c
+sed -e "/module_add(fsmod);/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" -e "/module_add(fsmod2);/d" exec.c
 sed "/fb.vbemode = modenum;/d" vbe.c
