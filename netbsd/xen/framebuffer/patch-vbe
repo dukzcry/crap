@@ -1,14 +1,15 @@
---- vbe.c.bak	2009-02-17 01:39:30.000000000 +0300
-+++ vbe.c	2012-04-10 06:12:41.000000000 +0400
-@@ -42,6 +42,7 @@ static int vbeverbose = 1;
- 
+$dukzcry$
+--- vbe.c.orig	2012-04-16 18:43:17.000000000 +0400
++++ vbe.c	2012-04-16 19:03:48.000000000 +0400
+@@ -43,6 +43,7 @@ static int vbeverbose = 1;
  static struct _vbestate {
  	int		available;
+ 	int		modenum;
 +	int		old_vbe;
  } vbestate;
  
  static void
-@@ -57,20 +58,57 @@ vbe_dump(struct vbeinfoblock *vbe)
+@@ -58,20 +59,57 @@ vbe_dump(struct vbeinfoblock *vbe)
  }
  
  static int
@@ -17,7 +18,7 @@
  {
 +	int ret = 0;
 +	char *str = NULL;
-+	
++
  	if ((mi->ModeAttributes & 0x01) == 0)
 -		return 0;	/* mode not supported by hardware */
 -	if ((mi->ModeAttributes & 0x08) == 0)
@@ -42,10 +43,10 @@
 +						//"available\n");
 +					if (retlin)
 +						return 0x08;
-+					break;
++				break;
 +				case 0x10:
 +					strncpy(str, "Text mode", sizeof(string));
-+					break;
++				break;
 +			}
 +		}
 +		goto unsp;
@@ -56,7 +57,7 @@
 +			str = (char *) &string;
 +		}
 +		goto unsp;
-+	}
++	}	
  	if (mi->MemoryModel != 0x04 /* Packed pixel */ &&
 -	    mi->MemoryModel != 0x06 /* Direct Color */)
 -		return 0;	/* unsupported pixel format */
@@ -76,16 +77,16 @@
  }
  
  void
-@@ -91,6 +129,8 @@ vbe_init(void)
- 
+@@ -93,6 +131,8 @@ vbe_init(void)
  	vbe_dump(&vbe);
  	vbestate.available = 1;
+ 	vbestate.modenum = 0;
 +	if (vbe.VbeVersion == 0x102) /* VBE 1.2 */
 +		vbestate.old_vbe = 1;
  }
  
  int
-@@ -138,14 +178,19 @@ vbe_set_mode(int modenum)
+@@ -140,14 +180,25 @@ vbe_set_mode(int modenum)
  		return 1;
  	}
  
@@ -96,7 +97,13 @@
 -	}
  
 -	ret = biosvbe_set_mode(modenum);
-+	ret = biosvbe_set_mode(modenum | (vbestate.old_vbe ? 0 : 0x4000));
++	//if (vbestate.old_vbe)
++		//vbe_lfb_quirks();
++
++	ret = biosvbe_set_mode(modenum | (vbestate.old_vbe ?
++		0 /* Found very old VBE version, lfb is rather not supported,
++		   * or can be activated via device regs */
++		: 0x4000));
  	if (ret != 0x004f) {
  		printf("VESA VBE mode 0x%x could not be set.\n", modenum);
 +		if (vbeverbose) {
@@ -109,7 +116,7 @@
  		return 1;
  	}
  
-@@ -238,7 +283,7 @@ vbe_find_mode(char *str)
+@@ -256,7 +307,7 @@ vbe_find_mode(char *str)
  		if (biosvbe_get_mode_info(mode, &mi) != 0x004f)
  			continue;
  		/* we only care about linear modes here */
@@ -118,7 +125,15 @@
  			continue;
  		safety = 0;
  		if (mi.XResolution == x &&
-@@ -293,7 +338,7 @@ vbe_modelist(void)
+@@ -265,7 +316,6 @@ vbe_find_mode(char *str)
+ 			return mode;
+ 	}
+ 
+-	printf("VESA VBE BIOS does not support %s\n", str);
+ 	return 0;
+ }
+ 
+@@ -311,7 +361,7 @@ vbe_modelist(void)
  		if (biosvbe_get_mode_info(mode, &mi) != 0x004f)
  			continue;
  		/* we only care about linear modes here */
@@ -127,8 +142,8 @@
  			continue;
  		safety = 0;
  		if (nmodes % 4 == 0)
---- biosvbe.S.bak	2012-04-10 03:33:05.000000000 +0400
-+++ biosvbe.S	2012-04-10 06:12:10.000000000 +0400
+--- biosvbe.S.orig	2009-02-17 01:39:30.000000000 +0300
++++ biosvbe.S	2012-04-11 20:55:51.000000000 +0400
 @@ -147,7 +147,6 @@ ENTRY(biosvbe_set_mode)
  	push	%edi
  

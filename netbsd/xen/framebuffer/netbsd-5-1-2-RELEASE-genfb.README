@@ -8,8 +8,8 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/boot/Make
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/Makefile?rev=1.27&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/rasops.c?rev=1.1&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/biosvbe.S?rev=1.1&content-type=text/plain
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/vbe.h?rev=1.1&content-type=text/plain
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/vbe.c?rev=1.1&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/vbe.h?rev=1.2&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/vbe.c?rev=1.4&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/bootmenu.h?rev=1.2&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/bootmenu.c?rev=1.2&content-type=text/plain
 
@@ -25,3 +25,4 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/x86/x86_autoconf
 Do:
 echo "time_t getsecs(void);" >> libi386.h
 sed -e "/module_add(fsmod);/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" -e "/if (fsmod2 != NULL && strcmp(fsmod, fsmod2) != 0)/d" exec.c
+sed "/fb.vbemode = modenum;/d" vbe.c
