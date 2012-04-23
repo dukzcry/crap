@@ -149,8 +149,40 @@ Based on the code of Jared D. McNeill <jmcneill@invisible.ca>
  static void
  handle_wedges(device_t dv, int par)
  {
+--- bootinfo.h.bak	2012-04-16 21:24:13.000000000 +0400
++++ /sys/arch/x86/include/bootinfo.h	2012-04-22 20:29:54.000000000 +0400
+@@ -166,7 +166,7 @@ struct btinfo_biosgeom {
+ };
+ 
+ struct bi_modulelist_entry {
+-	char path[80];
++	char path[160];
+ 	int type;
+ 	int len;
+ 	uint32_t base;
+@@ -195,7 +195,10 @@ struct btinfo_framebuffer {
+ 	uint8_t rpos;
+ 	uint8_t gpos;
+ 	uint8_t bpos;
+-	uint8_t reserved[16];
++	union {
++		int (*vbe_commit)(void);
++		uint8_t reserved[16];
++	};
+ };
+ 
+ #endif /* _LOCORE */
 --- exec.c.bak	2012-04-16 21:06:22.000000000 +0400
-+++ /sys/arch/i386/stand/lib/exec.c	2012-04-16 21:32:55.000000000 +0400
++++ /sys/arch/i386/stand/lib/exec.c	2012-04-23 18:07:22.000000000 +0400
+@@ -133,7 +133,7 @@ boot_module_t *boot_modules;
+ bool boot_modules_enabled = true;
+ bool kernel_loaded;
+ 
+-static struct btinfo_framebuffer btinfo_framebuffer;
++struct btinfo_framebuffer btinfo_framebuffer;
+ 
+ static struct btinfo_modulelist *btinfo_modulelist;
+ static size_t btinfo_modulelist_size;
 @@ -510,7 +510,24 @@ module_init(const char *kernel_path)
  			btinfo_modulelist->num++;
  			bi = (struct bi_modulelist_entry *)(buf + off);
@@ -177,26 +209,3 @@ Based on the code of Jared D. McNeill <jmcneill@invisible.ca>
  			bi->base = image_end;
  			bi->len = len;
  			bi->type = BI_MODULE_ELF;
---- bootinfo.h.bak	2012-04-16 21:24:13.000000000 +0400
-+++ /sys/arch/x86/include/bootinfo.h	2012-04-22 20:29:54.000000000 +0400
-@@ -166,7 +166,7 @@ struct btinfo_biosgeom {
- };
- 
- struct bi_modulelist_entry {
--	char path[80];
-+	char path[160];
- 	int type;
- 	int len;
- 	uint32_t base;
-@@ -195,7 +195,10 @@ struct btinfo_framebuffer {
- 	uint8_t rpos;
- 	uint8_t gpos;
- 	uint8_t bpos;
--	uint8_t reserved[16];
-+	union {
-+		int (*vbe_commit)(void);
-+		uint8_t reserved[16];
-+	};
- };
- 
- #endif /* _LOCORE */
