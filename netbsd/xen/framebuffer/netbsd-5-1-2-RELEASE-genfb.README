@@ -16,7 +16,7 @@ http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/bootm
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/libi386.h?rev=1.31&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/include/bootinfo.h?rev=1.15&content-type=text/plain
 
-http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.c?rev=1.41&content-type=text/plain
+http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/exec.c?rev=1.42&content-type=text/plain
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/x86/include/loadfile_machdep.h?rev=1.4&content-type=text/plain&only_with_tag=MAIN
 http://cvsweb.netbsd.org/bsdweb.cgi/~checkout~/src/sys/arch/i386/stand/lib/pcio.c?rev=1.24&content-type=text/plain&only_with_tag=MAIN
 
