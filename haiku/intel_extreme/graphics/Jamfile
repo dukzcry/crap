@@ -1,0 +1,10 @@
+--- /boot/home/temp/tmp/intel_extreme/src/graphics/intel_extreme/Jamfile.orig	2012-05-01 14:27:26.241434624 +0400
++++ /boot/home/temp/tmp/intel_extreme/src/graphics/intel_extreme/Jamfile	2012-04-30 18:44:48.617349120 +0400
+@@ -11,6 +11,7 @@ KernelAddon intel_extreme :
+ 	driver.cpp
+ 	device.cpp
+ 	intel_extreme.cpp
++	bios.cpp
+ 
+ 	kernel_cpp.cpp
+ 
