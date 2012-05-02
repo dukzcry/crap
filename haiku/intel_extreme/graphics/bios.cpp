@@ -96,6 +96,7 @@ struct lvds_bdb2_lfp_info {
 static struct vbios {
 	area_id area;
 	uint8* memory;
+	display_mode *shared_info;
 	struct {
 		uint16 hsync_start;
 		uint16 hsync_end;
@@ -171,7 +172,7 @@ static bool feed_shared_info(uint8* data)
 	/* */
 	if (bogus)
 		TRACE(("intel_extreme: adjusted LFP modeline: x%d Hz,\t%d "
-			"%d %d %d %d %d %d %d %d\n",
+			"%d %d %d %d   %d %d %d %d\n",
 				_PIXEL_CLOCK(data) / (
 					(_H_ACTIVE(data) + _H_BLANK(data))
 				      * (_V_ACTIVE(data) + _V_BLANK(data))
@@ -183,11 +184,24 @@ static bool feed_shared_info(uint8* data)
 				vbios.timings_common.vsync_end, vbios.timings_common.vsync_total
 		));
 
+	/* TO-DO: add retrieved info to edid info struct, not fixed mode struct */
+	
+	/* struct display_timing is not packed, so we're end setting of every single elm of it */
+	vbios.shared_info->timing.pixel_clock = _PIXEL_CLOCK(data) / 1000;
+	vbios.shared_info->timing.h_display = vbios.shared_info->virtual_width = _H_ACTIVE(data);
+	vbios.shared_info->timing.h_sync_start = vbios.timings_common.hsync_start;
+	vbios.shared_info->timing.h_sync_end = vbios.timings_common.hsync_end;
+	vbios.shared_info->timing.h_total = vbios.timings_common.hsync_total;
+	vbios.shared_info->timing.v_display = vbios.shared_info->virtual_height = _V_ACTIVE(data);
+	vbios.shared_info->timing.v_sync_start = vbios.timings_common.vsync_start;
+	vbios.shared_info->timing.v_sync_end = vbios.timings_common.vsync_end;
+	vbios.shared_info->timing.v_total = vbios.timings_common.vsync_total;
+
 	unmap_bios(vbios.area, vbios.memory);
 	return true;
 }
 
-bool get_lvds_mode_from_bios(void) 
+bool get_lvds_mode_from_bios(display_mode *shared_info) 
 {
 	struct vbt_header *vbt;
 	struct bdb_header *bdb;
@@ -269,6 +283,7 @@ bool get_lvds_mode_from_bios(void)
 					vbios.timings_common.vsync_end, vbios.timings_common.vsync_total
 				));*/
 
+				vbios.shared_info = shared_info;
 				return feed_shared_info(timing_data);
 			break;
 		}
