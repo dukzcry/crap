@@ -115,7 +115,13 @@ static inline bool unmap_bios(area_id area, uint8* mem) {
 }
 
 /* TO-DO: move to accelerant code, if possible */
-/* TO-DO: get VBT via BIOS call instead of touching VBIOS memory */
+
+/* this is reimplementation, Haiku uses BIOS call to get panel
+ * info, we're, otherwise, digging in VBIOS memory and parsing VBT
+ * tables to get native panel timings. This will allow you to get
+ * native panel mode on some laptops with enabled "compensation"
+ * option, or on such, which don't have ability to disable
+ * compensation at all */
 static bool
 get_bios(void)
 {
