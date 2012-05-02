@@ -1,5 +1,5 @@
 --- /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp.orig	2012-05-01 21:13:41.520880128 +0400
-+++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-02 16:30:21.556793856 +0400
++++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-02 19:01:55.498597888 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -9,15 +9,20 @@
  #ifdef TRACE_MODE
  extern "C" void _sPrintf(const char* format, ...);
  #	define TRACE(x) _sPrintf x
-@@ -69,6 +69,7 @@ struct pll_limits {
+@@ -69,6 +69,12 @@ struct pll_limits {
  	uint32			max_vco;
  };
  
++static struct display_mode_hook {
++	bool active;
++	display_mode *dm;
++} display_mode_hook;
++
 +static void vbt_fill_missing_bits(display_mode *);
  
  static status_t
  get_i2c_signals(void* cookie, int* _clock, int* _data)
-@@ -184,8 +185,15 @@ create_mode_list(void)
+@@ -184,8 +190,15 @@ create_mode_list(void)
  			// We could not read any EDID info. Fallback to creating a list with
  			// only the mode set up by the BIOS.
  			// TODO: support lower modes via scaling and windowing
@@ -35,26 +40,44 @@
  				size_t size = (sizeof(display_mode) + B_PAGE_SIZE - 1)
  					& ~(B_PAGE_SIZE - 1);
  
-@@ -196,8 +204,16 @@ create_mode_list(void)
+@@ -196,7 +209,35 @@ create_mode_list(void)
  				if (area < B_OK)
  					return area;
  
 -				memcpy(list, &gInfo->lvds_panel_mode, sizeof(display_mode));
--
 +				/* if got one, prefer info from VBT over standard BIOS
 +				 * info */
-+				if (gInfo->shared_info->got_vbt) {
++				if (gInfo->shared_info->got_vbt &&
++					/* optional: deprefer VBT mode in case it
++					 * doesn't outnumber one we recieved via BIOS call */
++					gInfo->shared_info->vbt_mode.virtual_width >=
++					gInfo->lvds_panel_mode.virtual_width &&
++					gInfo->shared_info->vbt_mode.virtual_height >=
++					gInfo->lvds_panel_mode.virtual_height
++				) {
 +					memcpy(list, &gInfo->shared_info->vbt_mode,
 +						sizeof(display_mode));
 +					vbt_fill_missing_bits(list);
 +				}
-+				else
++				else {
 +					memcpy(list, &gInfo->lvds_panel_mode,
 +						sizeof(display_mode));
++
++					if (gInfo->shared_info->got_vbt)
++						TRACE(("intel_extreme: VBT_mode.res_x*y "
++							"doesn't outnumber BIOS_call_mode.res_x*y. "
++							"Ignoring VBT mode.\n"));
++				}
++
++				/* since we're there, prefer native LFP mode by default, 
++				 * i.e. user didn't even set the native resolution mode
++				 * by himself */
++				display_mode_hook.active = true;
++				display_mode_hook.dm = list;
+ 
  				gInfo->mode_list_area = area;
  				gInfo->mode_list = list;
- 				gInfo->shared_info->mode_list_area = gInfo->mode_list_area;
-@@ -391,6 +407,30 @@ compute_pll_divisors(const display_mode 
+@@ -391,6 +432,30 @@ compute_pll_divisors(const display_mode 
  		divisors.m, divisors.m1, divisors.m2));
  }
  
@@ -85,3 +108,20 @@
  
  void
  retrieve_current_mode(display_mode& mode, uint32 pllRegister)
+@@ -681,8 +746,15 @@ intel_propose_display_mode(display_mode*
+ 
+ 
+ status_t
+-intel_set_display_mode(display_mode* mode)
++intel_set_display_mode(display_mode* dm)
+ {
++	display_mode* mode = dm;
++
++	if (display_mode_hook.active) {
++		mode = display_mode_hook.dm;
++		display_mode_hook.active = false;
++	}
++
+ 	TRACE(("intel_set_display_mode(%ldx%ld)\n", mode->virtual_width,
+ 		mode->virtual_height));
+ 
