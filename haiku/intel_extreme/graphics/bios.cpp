@@ -20,8 +20,8 @@
         (vbios.memory[_addr + 1] << 8))
 /* */
 
-/* subject of including into private/graphics/common/edid* */
-//#define _PIXEL_CLOCK_MHZ(x) (x[0] + (x[1] << 8)) / 100
+/* subject of including into private/graphics/common/edid* */ 
+#define _PIXEL_CLOCK_MHZ(x) (x[0] + (x[1] << 8)) / 100
 
 #define _PIXEL_CLOCK(x) (x[0] + (x[1] << 8)) * 10000
 #define _H_ACTIVE(x) (x[2] + ((x[4] & 0xF0) << 4))
@@ -96,6 +96,14 @@ struct lvds_bdb2_lfp_info {
 static struct vbios {
 	area_id area;
 	uint8* memory;
+	struct {
+		uint16 hsync_start;
+		uint16 hsync_end;
+		uint16 hsync_total;
+		uint16 vsync_start;
+		uint16 vsync_end;
+		uint16 vsync_total;
+	} timings_common;
 } vbios;
 
 static inline bool unmap_bios(area_id area, uint8* mem) {
@@ -145,6 +153,36 @@ get_bios(void)
 
 static bool feed_shared_info(uint8* data)
 {
+	bool bogus = false;	
+
+	/* handle bogus h/vtotal values, if got such */
+	if (vbios.timings_common.hsync_end > vbios.timings_common.hsync_total) {
+		vbios.timings_common.hsync_total =
+			vbios.timings_common.hsync_end + 1;
+		bogus = true;
+		TRACE(("intel_extreme: got bogus htotal. Fixing\n"));
+	}
+	if (vbios.timings_common.vsync_end > vbios.timings_common.vsync_total) {
+		vbios.timings_common.vsync_total =
+			vbios.timings_common.vsync_end + 1;
+		bogus = true;
+		TRACE(("intel_extreme: got bogus vtotal. Fixing\n"));
+	}
+	/* */
+	if (bogus)
+		TRACE(("intel_extreme: adjusted LFP modeline: x%d Hz,\t%d "
+			"%d %d %d %d %d %d %d %d\n",
+				_PIXEL_CLOCK(data) / (
+					(_H_ACTIVE(data) + _H_BLANK(data))
+				      * (_V_ACTIVE(data) + _V_BLANK(data))
+					),
+				_PIXEL_CLOCK_MHZ(data),
+				_H_ACTIVE(data), vbios.timings_common.hsync_start,
+				vbios.timings_common.hsync_end, vbios.timings_common.hsync_total,
+				_V_ACTIVE(data), vbios.timings_common.vsync_start,
+				vbios.timings_common.vsync_end, vbios.timings_common.vsync_total
+		));
+
 	unmap_bios(vbios.area, vbios.memory);
 	return true;
 }
@@ -203,17 +241,32 @@ bool get_lvds_mode_from_bios(void)
 				TRACE(("intel_extreme: found LFP of size %d x %d "
 					"in BIOS VBT tables\n",
 					lvds2_lfp_info->x_res, lvds2_lfp_info->y_res));
-				/*TRACE(("intel_extreme: LFP modeline: x%d Hz, %d "
-					"%d %d %d %d %d %d %d %d\n",
+
+				vbios.timings_common.hsync_start = _H_ACTIVE(timing_data) +
+					_H_SYNC_OFF(timing_data);
+				vbios.timings_common.hsync_end = vbios.timings_common.hsync_start
+					+ _H_SYNC_WIDTH(timing_data);
+				vbios.timings_common.hsync_total = _H_ACTIVE(timing_data) +
+					_H_BLANK(timing_data);
+				vbios.timings_common.vsync_start = _V_ACTIVE(timing_data) +
+					_V_SYNC_OFF(timing_data);
+				vbios.timings_common.vsync_end = vbios.timings_common.vsync_start
+                                        + _V_SYNC_WIDTH(timing_data);
+				vbios.timings_common.vsync_total = _V_ACTIVE(timing_data) +
+                                        _V_BLANK(timing_data);
+
+				/* Xfree86 compatible modeline */
+				/*TRACE(("intel_extreme: LFP modeline: x%d Hz,\t%d "
+					"%d %d %d %d   %d %d %d %d\n",
 					_PIXEL_CLOCK(timing_data) / (
 						(_H_ACTIVE(timing_data) + _H_BLANK(timing_data))
 					      * (_V_ACTIVE(timing_data) + _V_BLANK(timing_data))
 						),
 					_PIXEL_CLOCK_MHZ(timing_data),
-					_H_ACTIVE(timing_data), _H_BLANK(timing_data),
-					_H_SYNC_OFF(timing_data), _H_SYNC_WIDTH(timing_data),
-					_V_ACTIVE(timing_data), _V_BLANK(timing_data),
-					_V_SYNC_OFF(timing_data), _V_SYNC_WIDTH(timing_data)
+					_H_ACTIVE(timing_data), vbios.timings_common.hsync_start,
+					vbios.timings_common.hsync_end, vbios.timings_common.hsync_total,
+					_V_ACTIVE(timing_data), vbios.timings_common.vsync_start,
+					vbios.timings_common.vsync_end, vbios.timings_common.vsync_total
 				));*/
 
 				return feed_shared_info(timing_data);
