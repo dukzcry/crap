@@ -1,5 +1,5 @@
 --- /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp.orig	2012-05-01 21:13:41.520880128 +0400
-+++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-02 19:01:55.498597888 +0400
++++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-03 14:30:24.552075264 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -50,12 +50,12 @@
 +				if (gInfo->shared_info->got_vbt &&
 +					/* optional: deprefer VBT mode in case it
 +					 * doesn't outnumber one we recieved via BIOS call */
-+					gInfo->shared_info->vbt_mode.virtual_width >=
++					gInfo->shared_info->current_mode.virtual_width >=
 +					gInfo->lvds_panel_mode.virtual_width &&
-+					gInfo->shared_info->vbt_mode.virtual_height >=
++					gInfo->shared_info->current_mode.virtual_height >=
 +					gInfo->lvds_panel_mode.virtual_height
 +				) {
-+					memcpy(list, &gInfo->shared_info->vbt_mode,
++					memcpy(list, &gInfo->shared_info->current_mode,
 +						sizeof(display_mode));
 +					vbt_fill_missing_bits(list);
 +				}
