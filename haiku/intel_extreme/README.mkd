@@ -1,0 +1,6 @@
+Haiku's intel_extreme driver improvements and fixes
+===================================================
+
+1. Add reading of laptop's panel mode from VBT table in addition to existing BIOS call technique and use retrieved mode if it's resolution exceeds resolution which we got via BIOS call. Fixes situation when non-native mode is reported via call, for example, when screen compensation mode (stretching of non-native resolutions to the whole panel surface) is turned off on some laptops;
+2. Prefer native panel mode from beginning (i.e. it's a first boot with driver activated, user didn't changed resolution to native one in "Screen" preferences);
+3. On laptops there are usually two pipes, and on probing, machine may report that both of them are enabled. This causes framebuffer initialization using wrong registers (pipe A over pipe B while driving laptop's integrated digital panel). This leads to "[partial screen](http://dev.haiku-os.org/raw-attachment/ticket/3846/Haiku-Rev-33964-Partial-screen-at-1024x768.jpg)" or "[partial screen + garbage](http://dev.haiku-os.org/raw-attachment/ticket/3846/Haiku-Rev-33964-Cannot-change-to-1200x800.jpg)" visual appearances. Seen at least on FS P7010 & Dell Inspiron 700m laptops. Fix this.
