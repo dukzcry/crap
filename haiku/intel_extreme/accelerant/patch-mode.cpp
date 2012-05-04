@@ -1,5 +1,5 @@
 --- /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp.orig	2012-05-01 21:13:41.520880128 +0400
-+++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-03 14:30:24.552075264 +0400
++++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-04 20:14:48.272367616 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -22,6 +22,23 @@
  
  static status_t
  get_i2c_signals(void* cookie, int* _clock, int* _data)
+@@ -127,12 +133,12 @@ set_frame_buffer_base()
+ 	uint32 baseRegister;
+ 	uint32 surfaceRegister;
+ 
+-	if (gInfo->head_mode & HEAD_MODE_A_ANALOG) {
+-		baseRegister = INTEL_DISPLAY_A_BASE;
+-		surfaceRegister = INTEL_DISPLAY_A_SURFACE;
+-	} else {
++	if (gInfo->head_mode & HEAD_MODE_B_DIGITAL) {
+ 		baseRegister = INTEL_DISPLAY_B_BASE;
+ 		surfaceRegister = INTEL_DISPLAY_B_SURFACE;
++	} else {
++		baseRegister = INTEL_DISPLAY_A_BASE;
++		surfaceRegister = INTEL_DISPLAY_A_SURFACE;
+ 	}
+ 
+ 	if (sharedInfo.device_type.InGroup(INTEL_TYPE_96x)
 @@ -184,8 +190,15 @@ create_mode_list(void)
  			// We could not read any EDID info. Fallback to creating a list with
  			// only the mode set up by the BIOS.
@@ -124,4 +141,14 @@
 +
  	TRACE(("intel_set_display_mode(%ldx%ld)\n", mode->virtual_width,
  		mode->virtual_height));
+ 
+@@ -1006,8 +1078,7 @@ if (first) {
+ 			read32(INTEL_DISPLAY_B_PIPE_CONTROL) | DISPLAY_PIPE_ENABLED);
+ 		read32(INTEL_DISPLAY_B_PIPE_CONTROL);
+ 	}
+-
+-	if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
++	else if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
+ 		pll_divisors divisors;
+ 		compute_pll_divisors(target, divisors, false);
  
