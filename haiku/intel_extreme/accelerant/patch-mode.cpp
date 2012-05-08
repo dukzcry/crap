@@ -1,5 +1,5 @@
 --- /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp.orig	2012-05-01 21:13:41.520880128 +0400
-+++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-04 20:14:48.272367616 +0400
++++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-08 16:39:04.405536768 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -9,20 +9,25 @@
  #ifdef TRACE_MODE
  extern "C" void _sPrintf(const char* format, ...);
  #	define TRACE(x) _sPrintf x
-@@ -69,6 +69,12 @@ struct pll_limits {
+@@ -69,6 +69,17 @@ struct pll_limits {
  	uint32			max_vco;
  };
  
 +static struct display_mode_hook {
 +	bool active;
 +	display_mode *dm;
++	struct {
++		uint16 width;
++		uint16 height;
++		uint16 space;
++	} mode;
 +} display_mode_hook;
 +
-+static void vbt_fill_missing_bits(display_mode *);
++static void mode_fill_missing_bits(display_mode *, uint32);
  
  static status_t
  get_i2c_signals(void* cookie, int* _clock, int* _data)
-@@ -127,12 +133,12 @@ set_frame_buffer_base()
+@@ -127,12 +138,12 @@ set_frame_buffer_base()
  	uint32 baseRegister;
  	uint32 surfaceRegister;
  
@@ -39,7 +44,7 @@
  	}
  
  	if (sharedInfo.device_type.InGroup(INTEL_TYPE_96x)
-@@ -184,8 +190,15 @@ create_mode_list(void)
+@@ -184,8 +195,15 @@ create_mode_list(void)
  			// We could not read any EDID info. Fallback to creating a list with
  			// only the mode set up by the BIOS.
  			// TODO: support lower modes via scaling and windowing
@@ -57,7 +62,7 @@
  				size_t size = (sizeof(display_mode) + B_PAGE_SIZE - 1)
  					& ~(B_PAGE_SIZE - 1);
  
-@@ -196,7 +209,35 @@ create_mode_list(void)
+@@ -196,7 +214,35 @@ create_mode_list(void)
  				if (area < B_OK)
  					return area;
  
@@ -74,7 +79,7 @@
 +				) {
 +					memcpy(list, &gInfo->shared_info->current_mode,
 +						sizeof(display_mode));
-+					vbt_fill_missing_bits(list);
++					mode_fill_missing_bits(list, INTEL_DISPLAY_B_CONTROL);
 +				}
 +				else {
 +					memcpy(list, &gInfo->lvds_panel_mode,
@@ -94,14 +99,14 @@
  
  				gInfo->mode_list_area = area;
  				gInfo->mode_list = list;
-@@ -391,6 +432,30 @@ compute_pll_divisors(const display_mode 
+@@ -391,6 +437,30 @@ compute_pll_divisors(const display_mode 
  		divisors.m, divisors.m1, divisors.m2));
  }
  
 +static void
-+vbt_fill_missing_bits(display_mode *mode)
++mode_fill_missing_bits(display_mode *mode, uint32 cntrl)
 +{
-+        uint32 value = read32(INTEL_DISPLAY_B_CONTROL);
++        uint32 value = read32(cntrl);
 +
 +        switch (value & DISPLAY_CONTROL_COLOR_MASK) {
 +                case DISPLAY_CONTROL_RGB32:
@@ -125,24 +130,79 @@
  
  void
  retrieve_current_mode(display_mode& mode, uint32 pllRegister)
-@@ -681,8 +746,15 @@ intel_propose_display_mode(display_mode*
+@@ -521,27 +591,10 @@ retrieve_current_mode(display_mode& mode
+ 	if (mode.virtual_height < mode.timing.v_display)
+ 		mode.virtual_height = mode.timing.v_display;
+ 
+-	value = read32(controlRegister);
+-	switch (value & DISPLAY_CONTROL_COLOR_MASK) {
+-		case DISPLAY_CONTROL_RGB32:
+-		default:
+-			mode.space = B_RGB32;
+-			break;
+-		case DISPLAY_CONTROL_RGB16:
+-			mode.space = B_RGB16;
+-			break;
+-		case DISPLAY_CONTROL_RGB15:
+-			mode.space = B_RGB15;
+-			break;
+-		case DISPLAY_CONTROL_CMAP8:
+-			mode.space = B_CMAP8;
+-			break;
+-	}
++	mode_fill_missing_bits(&mode, controlRegister);
+ 
+ 	mode.h_display_start = 0;
+ 	mode.v_display_start = 0;
+-	mode.flags = B_8_BIT_DAC | B_HARDWARE_CURSOR | B_PARALLEL_ACCESS
+-		| B_DPMS | B_SUPPORTS_OVERLAYS;
+ }
+ 
+ 
+@@ -681,13 +734,22 @@ intel_propose_display_mode(display_mode*
  
  
  status_t
 -intel_set_display_mode(display_mode* mode)
 +intel_set_display_mode(display_mode* dm)
  {
+-	TRACE(("intel_set_display_mode(%ldx%ld)\n", mode->virtual_width,
+-		mode->virtual_height));
 +	display_mode* mode = dm;
-+
+ 
+-	if (mode == NULL)
 +	if (display_mode_hook.active) {
 +		mode = display_mode_hook.dm;
 +		display_mode_hook.active = false;
 +	}
 +
- 	TRACE(("intel_set_display_mode(%ldx%ld)\n", mode->virtual_width,
- 		mode->virtual_height));
++	if (mode == NULL) {
++		TRACE(("intel_set_display_mode(mode = NULL)\n"));
+ 		return B_BAD_VALUE;
++	}
++
++	TRACE(("intel_set_display_mode(%ldx%ld)\n", mode->virtual_width,
++		mode->virtual_height));
  
-@@ -1006,8 +1078,7 @@ if (first) {
+ 	display_mode target = *mode;
+ 
+@@ -702,9 +764,12 @@ intel_set_display_mode(display_mode* mod
+ 	uint32 colorMode, bytesPerRow, bitsPerPixel;
+ 	get_color_space_format(target, colorMode, bytesPerRow, bitsPerPixel);
+ 
+-	// TODO: do not go further if the mode is identical to the current one.
+-	// This would avoid the screen being off when switching workspaces when they
+-	// have the same resolution.
++	// avoid screen being off when switching workspaces when they
++        // have the same screen mode.
++	if (target.virtual_width == display_mode_hook.mode.width &&
++		target.virtual_height == display_mode_hook.mode.height &&
++		target.space == display_mode_hook.mode.space)
++			return B_OK;
+ 
+ #if 0
+ static bool first = true;
+@@ -1006,8 +1071,7 @@ if (first) {
  			read32(INTEL_DISPLAY_B_PIPE_CONTROL) | DISPLAY_PIPE_ENABLED);
  		read32(INTEL_DISPLAY_B_PIPE_CONTROL);
  	}
@@ -151,4 +211,15 @@
 +	else if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
  		pll_divisors divisors;
  		compute_pll_divisors(target, divisors, false);
+ 
+@@ -1140,6 +1204,10 @@ if (first) {
+ 	sharedInfo.current_mode = target;
+ 	sharedInfo.bits_per_pixel = bitsPerPixel;
+ 
++	display_mode_hook.mode.width = target.virtual_width;
++	display_mode_hook.mode.height = target.virtual_height;
++	display_mode_hook.mode.space = target.space;
++
+ 	return B_OK;
+ }
  
