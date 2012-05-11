@@ -1,10 +1,10 @@
 --- intel_extreme.cpp.orig	2012-05-11 11:03:37.057147392 +0400
-+++ intel_extreme.cpp	2012-05-11 10:29:19.087293952 +0400
++++ intel_extreme.cpp	2012-05-11 10:59:34.826540032 +0400
 @@ -29,6 +29,7 @@
  #	define TRACE(x) ;
  #endif
  
-+bool get_lvds_mode_from_bios(display_mode *);
++extern bool get_lvds_mode_from_bios(display_mode *);
  
  static void
  init_overlay_registers(overlay_registers* registers)
