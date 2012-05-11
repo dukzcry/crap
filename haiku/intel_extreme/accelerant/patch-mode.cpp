@@ -1,5 +1,5 @@
 --- mode.cpp.orig	2012-05-11 11:01:05.053739520 +0400
-+++ mode.cpp	2012-05-11 10:29:52.842792960 +0400
++++ mode.cpp	2012-05-11 15:17:15.736624640 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -211,17 +211,18 @@
  
  #if 0
  static bool first = true;
-@@ -1006,8 +1073,7 @@ if (first) {
+@@ -1006,7 +1073,9 @@ if (first) {
  			read32(INTEL_DISPLAY_B_PIPE_CONTROL) | DISPLAY_PIPE_ENABLED);
  		read32(INTEL_DISPLAY_B_PIPE_CONTROL);
  	}
 -
--	if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
-+	else if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
++	/* lot of bus writes and waits, better to take it off */
++	else
++	/* */
+ 	if ((gInfo->head_mode & HEAD_MODE_A_ANALOG) != 0) {
  		pll_divisors divisors;
  		compute_pll_divisors(target, divisors, false);
- 
-@@ -1140,6 +1206,10 @@ if (first) {
+@@ -1140,6 +1209,10 @@ if (first) {
  	sharedInfo.current_mode = target;
  	sharedInfo.bits_per_pixel = bitsPerPixel;
  
