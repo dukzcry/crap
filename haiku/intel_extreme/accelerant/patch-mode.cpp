@@ -1,5 +1,5 @@
---- /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp.orig	2012-05-01 21:13:41.520880128 +0400
-+++ /boot/home/temp/tmp/intel_extreme/src/accelerants/intel_extreme/mode.cpp	2012-05-08 16:39:04.405536768 +0400
+--- mode.cpp.orig	2012-05-11 11:01:05.053739520 +0400
++++ mode.cpp	2012-05-11 10:29:52.842792960 +0400
 @@ -24,7 +24,7 @@
  #include <validate_display_mode.h>
  
@@ -44,7 +44,16 @@
  	}
  
  	if (sharedInfo.device_type.InGroup(INTEL_TYPE_96x)
-@@ -184,8 +195,15 @@ create_mode_list(void)
+@@ -169,6 +180,8 @@ create_mode_list(void)
+ 	if (error == B_OK) {
+ 		edid_dump(&gInfo->edid_info);
+ 		gInfo->has_edid = true;
++		if (gInfo->shared_info->single_head_locked)
++			gInfo->head_mode = HEAD_MODE_A_ANALOG;
+ 	} else {
+ 		TRACE(("intel_extreme: getting EDID on port A (analog) failed : %s. "
+ 			"Trying on port C (lvds)\n", strerror(error)));
+@@ -184,8 +197,15 @@ create_mode_list(void)
  			// We could not read any EDID info. Fallback to creating a list with
  			// only the mode set up by the BIOS.
  			// TODO: support lower modes via scaling and windowing
@@ -62,7 +71,7 @@
  				size_t size = (sizeof(display_mode) + B_PAGE_SIZE - 1)
  					& ~(B_PAGE_SIZE - 1);
  
-@@ -196,7 +214,35 @@ create_mode_list(void)
+@@ -196,7 +216,35 @@ create_mode_list(void)
  				if (area < B_OK)
  					return area;
  
@@ -99,7 +108,7 @@
  
  				gInfo->mode_list_area = area;
  				gInfo->mode_list = list;
-@@ -391,6 +437,30 @@ compute_pll_divisors(const display_mode 
+@@ -391,6 +439,30 @@ compute_pll_divisors(const display_mode 
  		divisors.m, divisors.m1, divisors.m2));
  }
  
@@ -130,7 +139,7 @@
  
  void
  retrieve_current_mode(display_mode& mode, uint32 pllRegister)
-@@ -521,27 +591,10 @@ retrieve_current_mode(display_mode& mode
+@@ -521,27 +593,10 @@ retrieve_current_mode(display_mode& mode
  	if (mode.virtual_height < mode.timing.v_display)
  		mode.virtual_height = mode.timing.v_display;
  
@@ -159,7 +168,7 @@
  }
  
  
-@@ -681,13 +734,22 @@ intel_propose_display_mode(display_mode*
+@@ -681,13 +736,22 @@ intel_propose_display_mode(display_mode*
  
  
  status_t
@@ -186,7 +195,7 @@
  
  	display_mode target = *mode;
  
-@@ -702,9 +764,12 @@ intel_set_display_mode(display_mode* mod
+@@ -702,9 +766,12 @@ intel_set_display_mode(display_mode* mod
  	uint32 colorMode, bytesPerRow, bitsPerPixel;
  	get_color_space_format(target, colorMode, bytesPerRow, bitsPerPixel);
  
@@ -202,7 +211,7 @@
  
  #if 0
  static bool first = true;
-@@ -1006,8 +1071,7 @@ if (first) {
+@@ -1006,8 +1073,7 @@ if (first) {
  			read32(INTEL_DISPLAY_B_PIPE_CONTROL) | DISPLAY_PIPE_ENABLED);
  		read32(INTEL_DISPLAY_B_PIPE_CONTROL);
  	}
@@ -212,7 +221,7 @@
  		pll_divisors divisors;
  		compute_pll_divisors(target, divisors, false);
  
-@@ -1140,6 +1204,10 @@ if (first) {
+@@ -1140,6 +1206,10 @@ if (first) {
  	sharedInfo.current_mode = target;
  	sharedInfo.bits_per_pixel = bitsPerPixel;
  
