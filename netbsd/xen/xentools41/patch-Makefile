@@ -28,7 +28,7 @@
 +SUBST_CLASSES+=		var1
 +SUBST_STAGE.var1=	post-patch
 +SUBST_FILES.var1=	ioemu-qemu-xen/hw/pt-msi.c
-+SUBST_SED.var1=		-e "s|MAP_LOCKED|0|g"
++SUBST_SED.var1=		-e "s|MAP_LOCKED|MAP_WIRED|g"
 +
 +SUBST_CLASSES+=		var2
 +SUBST_STAGE.var2=	post-patch
