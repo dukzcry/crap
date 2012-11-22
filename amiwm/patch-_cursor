@@ -1,0 +1,78 @@
+--- system.amiwmrc.orig	2012-03-28 13:43:45.911645002 +0000
++++ system.amiwmrc
+@@ -4,6 +4,7 @@ IconPalette MagicWB
+ DefaultIcon "def_tool.info"
+ CustomIconsOnly Off
+ ShortLabelIcons Off
++UseDefaultCursor Off
+ TitlebarClock Off
+ TitleClockFormat "%c"
+ Screen "Workbench Screen"
+$NetBSD$
+
+--- menu.c.orig	2010-07-18 13:11:26.000000000 +0000
++++ menu.c
+@@ -778,7 +778,7 @@ void menuaction(struct Item *i, struct I
+     if(item==0)
+       restart_amiwm();
+ #endif
+-    if(item>0) {
++    if(item>=1) {
+       int it=0, si=-1;
+       for(ti=firsttoolitem; ti; ti=ti->next) {
+ 	if(ti->level>0)
+$NetBSD$
+
+--- rc.c.orig	2010-07-13 13:19:01.000000000 +0000
++++ rc.c
+@@ -153,6 +153,7 @@ struct keyword { char *name; int token;
+   { "titleclockformat", TITLECLOCKFORMAT },
+   { "toolitem", TOOLITEM },
+   { "true", YES },
++  { "usedefaultcursor", USEDEFAULTCURSOR },
+   { "yes", YES }
+ };
+ 
+$NetBSD$
+
+--- gram.y.orig	2010-07-13 13:15:51.000000000 +0000
++++ gram.y
+@@ -12,6 +12,7 @@ extern void set_sys_palette(void);
+ extern void set_mwb_palette(void);
+ extern void set_schwartz_palette(void);
+ extern void set_custom_palette(char *fn);
++extern Cursor wm_curs;
+ extern void add_toolitem(char *, char *, char *, int);
+ extern Scrn *openscreen(char *, Window);
+ extern void create_module(Scrn *, char *, char *);
+@@ -68,6 +69,7 @@ static int ti_level=0;
+ %token <num> TITLEBARCLOCK TITLECLOCKFORMAT
+ %token <num> OPAQUEMOVE OPAQUERESIZE SCREENMENU STYLE CLASS TITLE ICONTITLE ICON
+ %token <num> SHORTLABELICONS
++%token <num> USEDEFAULTCURSOR
+ %token <ptr> STRING
+ %token <num> NUMBER
+ 
+@@ -112,6 +114,7 @@ stmt		: error
+ 		| FOCUS focuspolicy { prefs.focus=$2; }
+ 		| CUSTOMICONSONLY truth { prefs.customiconsonly = $2; }
+ 		| SHORTLABELICONS truth { prefs.shortlabelicons = $2; }
++		| USEDEFAULTCURSOR truth { if($2==True) wm_curs = None; }
+ 		| TITLEBARCLOCK truth { prefs.titlebarclock = $2; }
+ 		| TITLECLOCKFORMAT string { prefs.titleclockformat = $2; }
+ 		| TITLECLOCKFORMAT NUMBER string { 
+$NetBSD$
+
+--- amiwm.1.orig	2012-03-28 20:27:25.125105621 +0000
++++ amiwm.1
+@@ -82,6 +82,10 @@ This limit the length of the text for ic
+ option is activated, an iconified program text will be limited to 8 chars + ".."
+ Use this option if you don't want iconified program text to be loong strings..
+ 
++.SH UseDefaultCursor {yes|no}
++
++Draws own X cursor, until you explicitly set no.
++
+ .SH TitleBarClock {yes|no}
+ 
+ Enables a clock in the titlebar.  It displays the date and time.
