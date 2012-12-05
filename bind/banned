@@ -1,4 +1,4 @@
-// $gate: banned,v 1.6 2010/12/14 13:38:19 dukzcry Exp $
+// $gate: banned,v 1.20 2012/11/22 09:02:28 dukzcry Exp $
 // Sliped zones
 
 // Google //
@@ -22,6 +22,41 @@ zone "safebrowsing-cache.google.com" {
 };
 // End of Google //
 
+// Start of pipl //
+// Vk
+//zone "userapi.com" {
+//	type master;
+//	file "special/banned.zones";
+//};
+
+// Facebook et all
+zone "connect.facebook.net" {
+	type master;
+	file "special/banned.zones";
+};
+//zone "facebook.com" {
+//	type master;
+//	file "special/banned.zones";
+//};
+// G+
+zone "apis.google.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// less annoying
+zone "platform.twitter.com" {
+	type master;
+	file "special/banned.zones";
+};
+// End of pipl //
+
+// LMGTFY.com ads
+zone "buysellads.com" {
+	type master;
+	file "special/banned.zones";
+};
+
 // Last.fm ads
 zone "2mdn.net" {
 	type master;
@@ -43,6 +78,11 @@ zone "rose.ixbt.com" {
 	type master;
 	file "special/banned.zones";
 };
+// Nag.ru
+zone "hc.uralweb.ru" {
+	type master;
+	file "special/banned.zones";
+};
 
 // disable useless retracker
 zone "retracker.local" {
@@ -61,6 +101,10 @@ zone "static.terrhq.ru" {
 	file "special/banned.zones";
 };
 zone "b.ddestiny.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "dt00.net" {
 	type master;
 	file "special/banned.zones";
 };
@@ -139,11 +183,19 @@ zone "adriver.ru" {
 	type master;
 	file "special/banned.zones";
 };
-// gamerka.me Yandex Metrics
-zone "mc.yandex.ru" {
+zone "luxup.ru" {
 	type master;
 	file "special/banned.zones";
 };
+zone "medianet.adlabs.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "targetix.net" {
+	type master;
+	file "special/banned.zones";
+};
+//
 
 // Begun.ru
 zone "begun.ru" {
@@ -153,6 +205,29 @@ zone "begun.ru" {
 
 // Yandex Advertisement Network
 zone "an.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// gamerka.me Yandex Metrics
+zone "mc.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// other Yandex shit
+zone "bs.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "yabs.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "kiks.yandex.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// music.yandex.ru inner banners
+zone "awaps.yandex.ru" {
 	type master;
 	file "special/banned.zones";
 };
@@ -253,12 +328,6 @@ zone "counter.internet.ge" {
 	file "special/banned.zones";
 };
 
-// imagepix.org (porno previews uploads)
-zone "adbrite.com" {
-	type master;
-	file "special/banned.zones";
-};
-
 // hifer.net shit
 // counters
 zone "r.i.ua" {
@@ -319,6 +388,29 @@ zone "s.holm.ru" {
 	file "special/banned.zones";
 };
 
+// turbobit.net
+zone "advmaker.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// advmaker.ru
+zone "am11.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "rmbn.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "partner.onga.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "iptsunami.com" {
+	type master;
+	file "special/banned.zones";
+};
+
 // rnns.ru
 zone "adskape.ru" {
 	type master;
@@ -365,6 +457,10 @@ zone "adbureau.net" {
 	type master;
 	file "special/banned.zones";
 };
+zone "ads.sup.com" {
+	type master;
+	file "special/banned.zones";
+};
 
 // Lenta.ru banners
 zone "ad.rambler.ru" {
@@ -382,6 +478,70 @@ zone "rs.mail.ru" {
 	file "special/banned.zones";
 };
 zone "top.mail.ru" {
+	type master;
+	file "special/banned.zones";
+};
+// partner program
+zone "1link.mail.ru" {
+	type master;
+	file "special/banned.zones";
+};
+
+// HMX.NET - page of some insane hikky
+// Amazon partner credit program based on referer clicks
+zone "assoc-amazon.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "assoc-amazon.jp" {
+	type master;
+	file "special/banned.zones";
+};
+// Ninja Tools and similar crap
+zone "shinobi.jp" {
+	type master;
+	file "special/banned.zones";
+};
+
+// PartyPoker advert. Very common as popup window on file-sharing
+// websites
+zone "partypoker.com" {
+	type master;
+	file "special/banned.zones";
+};
+
+// gamegrom.ru
+zone "promo.karosgame.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "promo.4sonline.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "promo.rzonline.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "stdate.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "binmedia.ru" {
+	type master;
+	file "special/banned.zones";
+};
+zone "media-code.info" {
+	type master;
+	file "special/banned.zones";
+};
+
+// Stack Exchange Network
+zone "adzerk.com" {
+	type master;
+	file "special/banned.zones";
+};
+zone "adzerk.net" {
 	type master;
 	file "special/banned.zones";
 };
