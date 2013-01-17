@@ -1,3 +1,3 @@
 proceed.ps1 && proceed.ps1.old
 ==============================
-Scripts for doing reboot and hibernate in Windows XP using PowerShell. Link to scripts may be located anywhere. Scripts pop-ups dialog with questions for confirmation of doing operation (rebooting or hibernating). That's prvents from accidental clicks on these icons.
+Scripts for doing reboot and hibernate in Windows XP using PowerShell. Link to scripts may be located anywhere. Scripts pop-ups dialog with questions for confirmation of doing operation (rebooting or hibernating). This prevents from accidental clicks on these icons.
