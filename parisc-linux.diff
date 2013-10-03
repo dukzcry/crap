@@ -1,0 +1,76 @@
+Series of primitive patches sent to upstream under the fake personality.
+
+--- a/drivers/char/agp/parisc-agp.c
++++ b/drivers/char/agp/parisc-agp.c
+@@ -129,7 +129,8 @@ parisc_agp_insert_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 	off_t j, io_pg_start;
+ 	int io_pg_count;
+ 
+-	if (type != 0 || mem->type != 0) {
++	if (type != mem->type ||
++		agp_bridge->driver->agp_type_to_mask_type(agp_bridge, type)) {
+ 		return -EINVAL;
+ 	}
+ 
+@@ -175,7 +176,8 @@ parisc_agp_remove_memory(struct agp_memory *mem, off_t pg_start, int type)
+ 	struct _parisc_agp_info *info = &parisc_agp_info;
+ 	int i, io_pg_start, io_pg_count;
+ 
+-	if (type != 0 || mem->type != 0) {
++	if (type != mem->type ||
++		agp_bridge->driver->agp_type_to_mask_type(agp_bridge, type)) {
+ 		return -EINVAL;
+ 	}
+
+---
+
+--- a/drivers/gpu/drm/radeon/r100.c
++++ b/drivers/gpu/drm/radeon/r100.c
+@@ -2933,10 +2933,11 @@ static int r100_debugfs_cp_ring_info(struct seq_file *m, void *data)
+         seq_printf(m, "CP_RB_RPTR 0x%08x\n", rdp);
+         seq_printf(m, "%u free dwords in ring\n", ring->ring_free_dw);
+         seq_printf(m, "%u dwords in ring\n", count);
+-	for (j = 0; j <= count; j++) {
+-		i = (rdp + j) & ring->ptr_mask;
+-		seq_printf(m, "r[%04d]=0x%08x\n", i, ring->ring[i]);
+-	}
++	if (ring->ready)
++		for (j = 0; j <= count; j++) {
++			i = (rdp + j) & ring->ptr_mask;
++			seq_printf(m, "r[%04d]=0x%08x\n", i, ring->ring[i]);
++		}
+         return 0;
+ }
+
+--- a/drivers/gpu/drm/radeon/radeon_ring.c
++++ b/drivers/gpu/drm/radeon/radeon_ring.c
+@@ -839,10 +839,11 @@ static int radeon_debugfs_ring_info(struct seq_file *m, void *data)
+          * packet that is the root issue
+          */
+         i = (ring->rptr + ring->ptr_mask + 1 - 32) & ring->ptr_mask;
+-	for (j = 0; j <= (count + 32); j++) {
+-		seq_printf(m, "r[%5d]=0x%08x\n", i, ring->ring[i]);
+-		i = (i + 1) & ring->ptr_mask;
+-	}
++	if (ring->ready)
++		for (j = 0; j <= (count + 32); j++) {
++			seq_printf(m, "r[%5d]=0x%08x\n", i, ring->ring[i]);
++			i = (i + 1) & ring->ptr_mask;
++		}
+         return 0;
+ }
+
+
+--- a/drivers/gpu/drm/radeon/radeon_device.c
++++ b/drivers/gpu/drm/radeon/radeon_device.c
+@@ -1319,6 +1319,11 @@ int radeon_device_init(struct radeon_device *rdev,
+                if (r)
+                        return r;
+        }
++       if (!rdev->accel_working) {
++               DRM_INFO("radeon: acceleration disabled, skipping tests and benchmark.\n");
++               return 0;
++       }
+        if ((radeon_testing & 1)) {
+                radeon_test_moves(rdev);
+        }
