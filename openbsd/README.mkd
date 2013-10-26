@@ -1,7 +1,3 @@
-##cp1251_keymap.sh
-
-NetBSD keymap clone for cyrillic CP1251 locale. (s/CP1251/I totally hate you too). You can run it from rc.local too. You should take fonts from FreeBSD, and convert them using uudecode -p cp1251-8.8. Font loads as usual and should be put in /usr/share/misc/pcvtfonts path. Although the font itself is crappy and doesn't support ASCII graphics, and only poor man's graphics. For pseudographics you're require cp866 font, altough FreeBSD users can easily use win2cpp866.scm screenmap. I don't know similar solution that exists for OpenBSD.
- 
 ##mk.conf-openmotif & openmotif-png-test-pass.patch
 
 OpenMotif that was installed from OpenBSD ports and Motif Window Manager that includes in this port builds without PNG and JPG support (includes dekstop icons for example) and offers only XPM option but PNG and JPG options are must wanted in current XXI century. So we add support. You need modify 'mk.conf' in order to add missing flags and supply patch 'openmotif-png-test-pass.patch'.
