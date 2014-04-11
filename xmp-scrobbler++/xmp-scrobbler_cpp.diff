@@ -1,0 +1,528 @@
+--- orig/xmp-scrobbler.cpp	Tue Jun 26 15:23:32 2007
++++ my/xmp-scrobbler.cpp	Mon Jan 25 04:24:46 2010
+@@ -13,12 +13,18 @@
+ #include "xmp-scrobbler.h"
+ #include "data.h"
+ 
++/* We need thread for our radio stream watchdog */
++
++
++
+ #include "libscrobbler\scrobbler.h"
+ 
+-#define XMPSCROBBLER_VERSION		"0.8"
++#define XMPSCROBBLER_VERSION		"0.1"
+ #define MAX_LENGTH					240		// in seconds
+ #define DELAY_BEFORE_FETCHINFO		10		// in seconds
+ #define DELAY_BEFORE_RESET			5		// in seconds
++/* Needs for pause checking in watchdog */
++#define IPC_ISPLAYING               104
+ 
+ HINSTANCE ghInstance;
+ DWORD instID = 0;
+@@ -42,9 +48,40 @@ int infoCounter = -1;    // info counter - used to hav
+ 
+ int cueCounter = -1;
+ 
++/* Don't scrobble radio tracks by default */
++bool RadioScrobbling;
++/* We need another scrobbling rules for radio tracks, as we don't know
++ * real time of tracks */
++bool XMP_IsRadio = false;
++/* Track changed */
++bool PleaseDie = false;
++bool XMP_RadioNewTrack_flag = false;
++unsigned int XMP_RadioTrackLength = 0;
++/* Don't want to lose it */
++
++bool WatchdogCreated = false;
++
+ bool isWinNT = false;   // TRUE if running on WinNT with Unicode
+ bool bProcessed = false;
+ 
++/* Class with struct meaning. Storing curtrack info */
++class RadioStr {
++private:
++        string artist; 
++        string title;
++        string album;
++public:
++       RadioStr() {}
++       ~RadioStr() {artist.empty(); title.empty();}
++       void fill_fields(char *a, char *t, char *l) {artist.clear(); title.clear(); album.clear(); 
++                                    artist+=a; title+=t; album+=l;}
++       string get_artist_field() {return artist;}
++       string get_title_field() {return title;}
++       string get_album_field() {return album;}
++};
++/* Ugly, but right here */
++RadioStr *RadioSt = new RadioStr();
++
+ typedef struct {
+ 	BOOL on;
+ 
+@@ -64,6 +101,12 @@ typedef struct {
+ 	int logfile_limit_size;
+ 	BOOL logfile_truncate;
+ 	BOOL logfile_debugmode;
++	
++	BOOL MZ_Not_Abusive;
++    BOOL RadioScrobbling;
++    BOOL SendAlbums;
++    char watchdog_rate[2];
++    BOOL SendChanges;
+ 
+ } XMPScrobblerConfig;
+ 
+@@ -123,15 +166,20 @@ bool XMP_ValidateLogSize();
+ 
+ void XMP_ScrobInit( const char *u, const char *p, string cache );
+ void XMP_ScrobTerm();
+-
+ void XMP_SubmitProc();
+ 
+ void XMP_FetchInfo();
++
++/* Radio watchdog declaration */
++THREADCALL XMP_RadioWatchdog(void *args);
++
+ void print_xmp_file();
+ int XMP_InTrack(int sec);
+ 
+ bool XMP_IsCUE();
+ int XMP_GetPlaybackTime();
++/* Watchdog needs */
++bool XMP_IsPaused();
+ void XMP_UpdateCurrentTrackIndex();
+ 
+ void XMP_SetDirty();
+@@ -161,12 +209,15 @@ static DWORD WINAPI DSP_Process(void *inst, float *src
+ 
+ void WINAPI DSP_About(HWND win)
+ {
+-	string msg = "xmp-scrobbler ";
++	string msg = "xmp-scrobbler++ ";
+ 
+ 	msg += XMPSCROBBLER_VERSION;
+-	msg += "\n\nJoin the social music revolution at Last.fm.\nIt's fun, it's free, it's all about the music.\n\nhttp://www.last.fm/";
++	msg += "\n\nAdded features:\n"
++    "[+] Scrobbling of radio streams";
++    msg += "\n\nFixed things:\n"
++    "[v] Disabling of MusicBrainz tags floodage";
+ 
+-	MessageBox( win, msg.c_str(), "xmp-scrobbler", MB_ICONINFORMATION );
++	MessageBox( win, msg.c_str(), "xmp-scrobbler++", MB_ICONINFORMATION );
+ }
+ 
+ XMPDSP dsp = {
+@@ -241,8 +292,14 @@ BOOL CALLBACK DSPDialogProc(HWND h, UINT m, WPARAM w, 
+ 					xmpcfg.logfile_limit = MESS(IDC_LOGFILE_LIMIT, BM_GETCHECK, 0, 0);
+ 					xmpcfg.logfile_truncate = MESS(IDC_LOGFILE_TRUNCATE, BM_GETCHECK, 0, 0);
+ 					xmpcfg.logfile_debugmode = MESS(IDC_LOGFILE_DEBUGMODE, BM_GETCHECK, 0, 0);
+-
+ 					xmpcfg.logfile_limit_size = MESS(IDC_LOGFILE_LIMITS, CB_GETCURSEL, 0, 0);
++					
++					xmpcfg.MZ_Not_Abusive = MESS(IDC_NOT_MZ_ABUSIVE, BM_GETCHECK, 0, 0);
++					/* Enable scrobbling of radio streams */
++					xmpcfg.RadioScrobbling = MESS(IDC_ENABLE_RADIO_SCROBBLING, BM_GETCHECK, 0, 0);
++					xmpcfg.SendAlbums = MESS(IDC_SEND_ALBUMS, BM_GETCHECK, 0, 0);
++					MESS(IDC_WATCHDOG_RATE, WM_GETTEXT, 3, xmpcfg.watchdog_rate);
++					xmpcfg.SendChanges = MESS(IDC_SEND_CHANGES, BM_GETCHECK, 0, 0);
+ 
+ 					EndDialog( h, 1 );
+ 
+@@ -278,6 +335,15 @@ BOOL CALLBACK DSPDialogProc(HWND h, UINT m, WPARAM w, 
+ 					break;
+ 				}
+ 				
++				case IDC_ENABLE_RADIO_SCROBBLING:
++                {
++                    bool bEnabled = MESS(IDC_ENABLE_RADIO_SCROBBLING, BM_GETCHECK, 0, 0);
++                    EnableWindow(GetDlgItem(h, IDC_WATCHDOG_RATE), bEnabled);
++                    /* EnableWindow(GetDlgItem(h, IDC_SEND_ALBUMS), bEnabled); */
++                    
++                    break;
++                }  
++				
+ 				case IDC_PROXY_AUTH:
+ 				{
+ 					bool bAuthEnabled = MESS(IDC_PROXY_AUTH, BM_GETCHECK, 0, 0);
+@@ -316,8 +382,13 @@ BOOL CALLBACK DSPDialogProc(HWND h, UINT m, WPARAM w, 
+ 		case WM_INITDIALOG:
+ 		{
+ 			MESS(IDC_ENABLE, BM_SETCHECK, xmpcfg.on ? 1 : 0, 0);
++			
++			MESS(IDC_NOT_MZ_ABUSIVE, BM_SETCHECK, xmpcfg.MZ_Not_Abusive ? 1 : 0, 0);
++			MESS(IDC_ENABLE_RADIO_SCROBBLING, BM_SETCHECK, xmpcfg.RadioScrobbling ? 1 : 0, 0);
+ 			MESS(IDC_PROXY_ENABLE, BM_SETCHECK, xmpcfg.proxy_enabled ? 1 : 0, 0);
+ 			MESS(IDC_PROXY_AUTH, BM_SETCHECK, xmpcfg.proxy_auth_enabled ? 1 : 0, 0);
++            MESS(IDC_SEND_CHANGES, BM_SETCHECK, xmpcfg.SendChanges ? 1 : 0, 0);
++            MESS(IDC_SEND_ALBUMS, BM_SETCHECK, xmpcfg.SendAlbums ? 1 : 0, 0);
+ 
+ 			MESS(IDC_USERNAME, WM_SETTEXT, 0, xmpcfg.username);
+ 			MESS(IDC_PASSWORD, WM_SETTEXT, 0, xmpcfg.password);
+@@ -327,6 +398,8 @@ BOOL CALLBACK DSPDialogProc(HWND h, UINT m, WPARAM w, 
+ 
+ 			MESS(IDC_PROXY_USER, WM_SETTEXT, 0, xmpcfg.proxy_user);
+ 			MESS(IDC_PROXY_PASSWORD, WM_SETTEXT, 0, xmpcfg.proxy_password);
++			
++			MESS(IDC_WATCHDOG_RATE, WM_SETTEXT, 0, xmpcfg.watchdog_rate);
+ 
+ 			EnableWindow(GetDlgItem(h, IDC_PROXY_SERVER), xmpcfg.proxy_enabled);
+ 			EnableWindow(GetDlgItem(h, IDC_PROXY_PORT), xmpcfg.proxy_enabled);
+@@ -334,6 +407,8 @@ BOOL CALLBACK DSPDialogProc(HWND h, UINT m, WPARAM w, 
+ 			EnableWindow(GetDlgItem(h, IDC_PROXY_AUTH), xmpcfg.proxy_enabled);
+ 			EnableWindow(GetDlgItem(h, IDC_PROXY_USER), xmpcfg.proxy_enabled && xmpcfg.proxy_auth_enabled);
+ 			EnableWindow(GetDlgItem(h, IDC_PROXY_PASSWORD), xmpcfg.proxy_enabled && xmpcfg.proxy_auth_enabled);
++			
++			EnableWindow(GetDlgItem(h, IDC_WATCHDOG_RATE), xmpcfg.RadioScrobbling);
+ 
+ 			MESS(IDC_LOGFILE_LIMIT, BM_SETCHECK, xmpcfg.logfile_limit ? 1 : 0, 0);
+ 			MESS(IDC_LOGFILE_TRUNCATE, BM_SETCHECK, xmpcfg.logfile_truncate ? 1 : 0, 0);
+@@ -429,7 +504,8 @@ DWORD WINAPI DSP_Process(void *inst, float *buffer, DW
+ 			XMP_Log( "[DEBUG] DSP_Process -- sec <= 0\n" );
+ 
+ 			XMP_KillSubmitTimer();
+-			XMP_SubmitProc();
++            if(!XMP_IsRadio)
++			   XMP_SubmitProc();
+ 
+ 			if(XMP_IsCUE())
+ 				XMP_SetCUETimer();
+@@ -455,7 +531,11 @@ DWORD WINAPI DSP_Process(void *inst, float *buffer, DW
+ 			{*/
+ 				XMP_FetchInfo();
+ 				XMP_UpdateCurrentTrackIndex();
+-				XMP_SetSubmitTimer();
++				
++                /* Don't need this timer for radio streams */
++                if(!XMP_IsRadio) {
++				   XMP_SetSubmitTimer();
++                }
+ //			}
+ 		}
+ 	}
+@@ -514,6 +594,12 @@ void WINAPI DSP_SetFormat(void *inst, const XMPFORMAT 
+ 	if( xmpRate == 0 && xmpChans == 0 ) // track was stopped
+ 	{
+ 		XMP_Log( "[DEBUG] DSP_StopTrack\n" );
++		
++       /* We need re-run watchdog when user changes the radio stream */
++       if(WatchdogCreated) {
++          PleaseDie = true;     
++          XMP_IsRadio = false;               
++       }
+ 
+ 		if(xmpCounter != -1)
+ 			XMP_Log( "[INFO] Track stopped\n" );
+@@ -663,28 +749,41 @@ bool XMP_ValidateLogSize()
+ }
+ 
+ void XMP_SubmitProc()
+-{
++{     
+ 	XMP_Log( "[DEBUG] XMP_SubmitProc start\n" );
+ 	
+-	if(XMP_IsDirty())
++	if(XMP_IsDirty()) {
+ 		return;
++    }
+ 
+ 	TRACKDATA curTrack;
+ 	
+ 	memset(&curTrack, 0, sizeof(curTrack));
+ 
+-	memcpy( curTrack.artist, xmpFile.tracks[xmpFile.current_track].artist, TAG_FIELD_SIZE );
+-	memcpy( curTrack.title, xmpFile.tracks[xmpFile.current_track].title, TAG_FIELD_SIZE );
+-	memcpy( curTrack.album, xmpFile.album, TAG_FIELD_SIZE );
+-	memcpy( curTrack.mb, xmpFile.mb, TAG_FIELD_SIZE );
+-
+-	curTrack.playtime = time( NULL );
+-	curTrack.length = xmpFile.tracks[xmpFile.current_track].length;
++	if(XMP_IsRadio) {
++        memmove( curTrack.artist, RadioSt->get_artist_field().c_str(),
++            RadioSt->get_artist_field().length());
++        memmove( curTrack.title, RadioSt->get_title_field().c_str(),
++            RadioSt->get_title_field().length());
++        if(xmpcfg.SendAlbums) 
++            memmove( curTrack.album, RadioSt->get_album_field().c_str(), RadioSt->get_album_field().length());
++        /* Store track length recieved from Watchdog */
++        curTrack.length = XMP_RadioTrackLength;
++    } else {
++        curTrack.length = xmpFile.tracks[xmpFile.current_track].length;        
++	    memmove( curTrack.artist, xmpFile.tracks[xmpFile.current_track].artist, TAG_FIELD_SIZE );
++	    memmove( curTrack.title, xmpFile.tracks[xmpFile.current_track].title, TAG_FIELD_SIZE );
++	    memmove( curTrack.album, xmpFile.album, TAG_FIELD_SIZE );
++	    memmove( curTrack.mb, xmpFile.mb, TAG_FIELD_SIZE );
++    }    
++   	curTrack.playtime = time( NULL );
+ 	curTrack.status = 0;
+ 
+ 	scrob->addSong( curTrack );
+ 	
+-	xmpFile.tracks[xmpFile.current_track].submitted = true;
++	/* XXX: Or that could crash xmp */
++	/* if(!xmpcfg.SendChanges)
++          xmpFile.tracks[xmpFile.current_track].submitted = true; */
+ }
+ 
+ void XMP_ScrobInit( const char *u, const char *p, string cache )
+@@ -692,9 +791,10 @@ void XMP_ScrobInit( const char *u, const char *p, stri
+ 	if( !scrob )
+ 	{
+ 		XMP_Log("[DEBUG] XMP_ScrobInit() started\n");
++        /* Taken from AmiScrobbler 0.0.2a 
++         * My apologies to Creator of xmp-scrobbler ;) */
++		scrob = new Scrobbler( u, p, "xmp", "1.1" );
+ 
+-		scrob = new Scrobbler( u, p, "xmp", "0.1" );
+-
+ 		scrob->setCacheFile( cache );
+ 		scrob->setLogFile( pathLog );
+ 
+@@ -744,6 +844,8 @@ int XMP_InTrack(int sec)
+ // gets information for the current file,
+ // fills xmpFile variable and parses info1 from XMPlay
+ 
++unsigned int delay;
++
+ void XMP_FetchInfo()
+ {
+ 	XMP_Log( "[DEBUG] XMP_FetchInfo -- start\n" );
+@@ -768,7 +870,6 @@ void XMP_FetchInfo()
+ 	if(block != "")
+ 	{
+ 		// this file contains CUE sheet, we need to parse it
+-
+ 		XMP_Log( "[DEBUG] XMP_FetchInfo() - CUE sheet parsing started\n" );
+ 
+ 		int cue_start = -1;
+@@ -849,9 +950,19 @@ void XMP_FetchInfo()
+ 		cue_track.length = xmpFile.length;
+ //		cue_track.end = xmpFile.length;
+ 
+-		cue_track.tags_ok = XMP_ExtractTags_ID3v2((char *) info1,
+-			cue_track.artist, cue_track.title, xmpFile.album);
++        RadioScrobbling = xmpcfg.RadioScrobbling;
++        /* Not radio scrobbling by default */
++        XMP_IsRadio = false;
+ 
++        /* Check for network radio scrobbling. Treck length is unknown */
++		if(!cue_track.tags_ok && SendMessage( xmpfmisc->GetWindow(), WM_USER, 1, 105 ) == 0)
++            cue_track.tags_ok = XMP_ExtractTags_NetRadio((char *) info1,
++                cue_track.artist, cue_track.title, xmpFile.album);       
++        /* Normal tracks go here */        
++        if(!XMP_IsRadio && SendMessage( xmpfmisc->GetWindow(), WM_USER, 1, 105 ) > 0) {
++		    cue_track.tags_ok = XMP_ExtractTags_ID3v2((char *) info1,
++			    cue_track.artist, cue_track.title, xmpFile.album);
++
+ 		if(!cue_track.tags_ok)
+ 			cue_track.tags_ok = XMP_ExtractTags_ID3v1((char *) info1,
+ 				cue_track.artist, cue_track.title, xmpFile.album);
+@@ -859,19 +970,41 @@ void XMP_FetchInfo()
+ 		if(!cue_track.tags_ok)
+ 			cue_track.tags_ok = XMP_ExtractTags_WMA((char *) info1,
+ 				cue_track.artist, cue_track.title, xmpFile.album);
+-
++				
+ 		if(!cue_track.tags_ok)
+ 			cue_track.tags_ok = XMP_ExtractTags_Other((char *) info1,
+-				cue_track.artist, cue_track.title, xmpFile.album);
++				cue_track.artist, cue_track.title, xmpFile.album);	
++        }
++        else {
++            /* Watchdog refresh rate*/
++            xmpcfg.watchdog_rate[2] = '\0';
++            delay = atoi(xmpcfg.watchdog_rate);
++            if(!delay || delay < 9) 
++                delay = 9;
++            else if(delay > 60)
++                delay = 60;
++            
++           /* Create one instance of watchdog thread */
++           if(!WatchdogCreated)
++              CreateThread(NULL, 0, XMP_RadioWatchdog, NULL, 0, NULL);
++        }
+ 
+-		if(cue_track.tags_ok)
++        /* Musicbrainz in streams? :D */
++		if(cue_track.tags_ok && !XMP_IsRadio)
+ 		{
+ 			if(XMP_ExtractTags_MBID((char *) info1, xmpFile.mb))
+ 				XMP_Log( "[INFO] Track MusicBrainz ID: %s\n", xmpFile.mb );
+-			else
+-				XMP_Log( "[WARNING] No valid MusicBrainz ID found, consider using MusicBrainz taggers to tag this file properly!\n", xmpFile.mb );
++			else if(!xmpcfg.MZ_Not_Abusive)
++				XMP_Log( "[WARNING] No valid MusicBrainz ID found, consider using MusicBrainz taggers to tag this file properly!\n" );
+ 		}
+-
++		else if(XMP_IsRadio) {
++             string artist, title; artist += cue_track.artist; title += cue_track.title;
++             if(!artist.empty() && !title.empty()) {
++                XMP_Log("[DEBUG] Recieved struct:\n%s", info1);
++		        XMP_Log("[INFO] Listening now to radio stream: %s - %s (%s)\n", cue_track.artist, 
++                   cue_track.title, xmpFile.album);
++            }
++       }     
+ 		if(cue_track.tags_ok)
+ 		{
+ 			if( xmpFile.tracks != NULL)
+@@ -896,6 +1029,112 @@ void XMP_FetchInfo()
+ //	print_xmp_file();
+ }
+ 
++/* Radio stream watchdog */
++THREADCALL XMP_RadioWatchdog(void *vptr_args)
++{    
++     XMP_Log( "[DEBUG] XMP_RadioWatchdog -- start\n" );
++     
++     bool flag, StopLogged;
++     /* Only one instance */
++     WatchdogCreated = true;
++     flag = StopLogged = false;
++     time_t track_start_time;
++     unsigned int consumpted = 0;
++     char char_tmp[TAG_FIELD_SIZE], char_tmp2[TAG_FIELD_SIZE], char_tmp3[TAG_FIELD_SIZE];
++     char *info1;
++     
++     /* Let's start count track length */
++     time(&track_start_time); 
++/* O to the M to the G */
++PlaybackResumpted: 
++     /* That's much better than killing thread from outside */
++     while(XMP_IsRadio && !PleaseDie && !XMP_IsPaused() ) {
++        /* WinAPI timer */
++        Sleep(delay * 1000);     
++        
++        if(! (info1 = xmpfmisc->GetInfoText(XMPINFO_TEXT_MESSAGE)) ) {
++             XMP_Log( "[INFO] Radio stream stopped\n" );
++             continue;
++        }
++        string tmp(info1);
++
++        /* Initialisation */
++        memset(char_tmp, 0, TAG_FIELD_SIZE);
++        memset(char_tmp2, 0, TAG_FIELD_SIZE);
++        memset(char_tmp3, 0, TAG_FIELD_SIZE);
++
++        /* Can't get info. Possibly problems or stop playing? */
++        if( !XMP_ExtractTags_NetRadio((char *) info1, char_tmp, char_tmp2, char_tmp3) ) {
++            if(!StopLogged)
++               XMP_Log( "[DEBUG] Didn't find fields in the radio stream\n" );
++            StopLogged = true;
++            continue;
++        }
++        else
++            StopLogged = false;
++        /* Store title and artist for checking for updates */
++        if(!flag)
++            RadioSt->fill_fields(char_tmp, char_tmp2, char_tmp3);
++        flag = true;
++        string artist(char_tmp), title(char_tmp2);
++        /* New track appeared */
++          if(RadioSt->get_artist_field() != artist ||
++            RadioSt->get_title_field() != title) {
++                    if(!PleaseDie || xmpcfg.SendChanges) {
++                        XMP_RadioNewTrack_flag = true;
++                        /* Let's store track length */
++                        XMP_RadioTrackLength = (unsigned int) difftime(time(NULL), track_start_time) - consumpted;
++                        consumpted = 0;
++                        /* Re-set start time */
++                        time(&track_start_time);
++                    }  
++        }
++        /* New track detected, let's submit it */
++        if(XMP_RadioNewTrack_flag) {
++            XMP_RadioNewTrack_flag = flag = false;
++
++            /* Actually, last.fm bans short tracks, but anyway, let's 
++             * don't break the rules */
++             if(XMP_RadioTrackLength >= 30) {
++                XMP_Log( "[INFO] Radio track for submission: %s - %s (%s) "
++                    "of approximately %ds length\n", 
++                        RadioSt->get_artist_field().c_str(),
++                        RadioSt->get_title_field().c_str(), 
++                        RadioSt->get_album_field().c_str(),
++                        XMP_RadioTrackLength );
++                /* Start submit proc */
++                XMP_SubmitProc();
++            } else
++                XMP_Log("[INFO] Radio track %s - %s (%s) of approximately %ds length "
++                        "willn't submit due of it's shortness\n",
++                        RadioSt->get_artist_field().c_str(),
++                        RadioSt->get_title_field().c_str(), 
++                        RadioSt->get_album_field().c_str(),
++                        XMP_RadioTrackLength );
++        }
++     }
++     /* Just trick to prevent XMPlay from crashing.
++      * Pauses are baneful */
++     if(XMP_IsPaused() && XMP_IsRadio && !PleaseDie) {
++        time_t start_time = time(NULL);
++        /* Eating cycles, but nothing better else :( */
++        while(XMP_IsPaused()) 
++            ;
++        /* Huh? Hindu code? Just rephrasing lmao */
++        if(XMP_IsRadio && !PleaseDie) {
++            /* We should substract idling time */
++            consumpted = (unsigned int) difftime(time(NULL), start_time);
++            goto PlaybackResumpted;
++        }
++    }
++     
++     XMP_Log( "[DEBUG] XMP_RadioWatchdog -- end\n" );
++     
++     /* Not sure that only once, we'll better re-run it when we'll need it again */
++     WatchdogCreated = PleaseDie = false;
++     return 1;
++}
++
+ void XMP_SetSubmitTimer()
+ {
+ //	XMP_Log( "[DEBUG] XMP_SetSubmitTimer()\n" );
+@@ -908,12 +1147,12 @@ void XMP_SetSubmitTimer()
+ 
+ 	if( len < 30 )
+ 	{
+-		XMP_Log( "[INFO] Track is too short to be submitted (must be at least 30 seconds long)\n" );
++	    XMP_Log( "[INFO] Track is too short to be submitted (must be at least 30 seconds long)\n" );
+ 
+ 		if(XMP_IsCUE())
+ 			XMP_SetCUETimer();
+ 		
+-		return;
++	    return;
+ 	}
+ 
+ 	XMP_KillSubmitTimer();
+@@ -922,6 +1161,7 @@ void XMP_SetSubmitTimer()
+ 		return;
+ 
+ 	int diff = XMP_GetPlaybackTime() - xmpFile.tracks[xmpFile.current_track].start;
++	
+ 	DWORD secLen = (len / 2 < 240 ? len / 2 : 240) - diff;
+ 	
+ 	XMP_Log("[DEBUG] len = %d, diff = %d\n", (len / 2 < 240 ? len / 2 : 240), diff);
+@@ -1014,6 +1254,13 @@ int XMP_GetPlaybackTime()
+ 	return SendMessage( xmpfmisc->GetWindow(), WM_USER, 0, 105 ) / 1000;
+ }
+ 
++bool XMP_IsPaused()
++{
++    /* Ian says use IPC_ISPLAYING to check is XMPlay playing something now
++     * If pause detected then go for sleep */
++    return ( SendMessage( xmpfmisc->GetWindow(), WM_USER, 0, IPC_ISPLAYING ) == 3 );
++}
++
+ void XMP_UpdateCurrentTrackIndex()
+ {
+ 	xmpFile.current_track = XMP_InTrack(XMP_GetPlaybackTime());
+@@ -1071,7 +1318,7 @@ void XMP_Welcome()
+ 		dwBuild = (DWORD)(HIWORD(dwVersion));
+ 
+ 	XMP_Log("----\n");
+-	XMP_Log("[INFO] Hello, this is xmp-scrobbler %s\n", XMPSCROBBLER_VERSION);
++	XMP_Log("[INFO] Hello, this is xmp-scrobbler++ %s\n", XMPSCROBBLER_VERSION);
+ 	XMP_Log("[DEBUG] GetVersion() = %d (%d.%d, build %d)\n", GetVersion(), dwMajor, dwMinor, dwBuild);
+ 	XMP_Log("[DEBUG] curl_version() = %s\n", curl_version());
+ }

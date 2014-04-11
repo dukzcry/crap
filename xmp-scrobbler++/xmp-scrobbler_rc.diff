@@ -1,0 +1,60 @@
+--- orig/xmp-scrobbler.rc	Thu Feb  8 20:00:36 2007
++++ my/xmp-scrobbler.rc	Sun Jan 10 03:46:58 2010
+@@ -1,6 +1,7 @@
+ #define IDC_BTN1 2
+ #define IDC_GRP1 1
+ #define IDC_GRP2 2
++#define IDC_GRP3 3
+ #define IDC_STC1 5
+ #define IDC_STC2 6
+ #define IDC_STC3 7
+@@ -18,11 +19,11 @@ BEGIN
+   BEGIN
+     BLOCK "040904B0"
+     BEGIN
+-      VALUE "FileDescription", "xmp-scrobbler\0"
++      VALUE "FileDescription", "xmp-scrobbler++\0"
+       VALUE "FileVersion", "0.1\0"
+-      VALUE "InternalName", "xmp-scrobbler\0"
++      VALUE "InternalName", "xmp-scrobbler++\0"
+       VALUE "OriginalFilename", "xmp-scrobbler.dll\0"
+-      VALUE "ProductName", "xmp-scrobbler\0"
++      VALUE "ProductName", "xmp-scrobbler++\0"
+       VALUE "ProductVersion", "0.1\0"
+     END
+   END
+@@ -31,8 +32,8 @@ BEGIN
+     VALUE "Translation", 0x0409, 0x04B0
+   END
+ END
+-IDD_CONFIG DIALOGEX 0,0,226,236
+-CAPTION "xmp-scrobbler"
++IDD_CONFIG DIALOGEX 0,0,226,287
++CAPTION "xmp-scrobbler++"
+ FONT 8,"MS Shell Dlg",0,0
+ STYLE 0x80C80088
+ EXSTYLE 0x00040000
+@@ -41,8 +42,8 @@ BEGIN
+   CONTROL "",IDC_PASSWORD,"Edit",0x500100A0,48,33,62,13,0x00000200
+   CONTROL "Enable xmp-scrobbler",IDC_ENABLE,"Button",0x10010103,121,17,91,9
+   CONTROL "View Log File",IDC_VIEW_LOG,"Button",0x50010000,158,149,52,17
+-  CONTROL "&Cancel",IDCANCEL,"Button",0x50010000,116,212,52,17
+-  CONTROL "&Save",IDOK,"Button",0x50010001,56,212,56,17
++  CONTROL "&Cancel",IDCANCEL,"Button",0x50010000,116,267,52,17
++  CONTROL "&Save",IDOK,"Button",0x50010001,56,267,56,17
+   CONTROL "Last.fm Account",-1,"Button",0x50000007,6,5,108,46
+   CONTROL "Username:",-1,"Static",0x50020000,12,20,34,11
+   CONTROL "Password:",-1,"Static",0x50020000,12,35,34,9,0x00000020
+@@ -64,4 +65,12 @@ BEGIN
+   CONTROL "Limit log file size to",IDC_LOGFILE_LIMIT,"Button",0x50010003,12,153,72,9
+   CONTROL "Create new log file at each startup",IDC_LOGFILE_TRUNCATE,"Button",0x50010003,12,166,136,9
+   CONTROL "Enable debug mode",IDC_LOGFILE_DEBUGMODE,"Button",0x10010103,12,179,92,9
++  CONTROL "Radio streams scrobbling options",IDC_GRP3,"Button",0x50000007,6,196,214,67
++  CONTROL "Enable radio streams scrobbling",IDC_ENABLE_RADIO_SCROBBLING,"Button",0x10010103,12,210,115,9
++  CONTROL "Send station name as track album",IDC_SEND_ALBUMS,"Button",0x10010103,12,223,121,9
++  CONTROL "Recheck for new track every:",-1,"Static",0x50020000,24,247,96,11
++  CONTROL "",IDC_WATCHDOG_RATE,"Edit",0x50012080,122,247,20,13,0x00000200
++  CONTROL "secs (in 9-60 range)",-1,"Static",0x50020000,148,247,70,11
++  CONTROL "Sumbit track on stream change",IDC_SEND_CHANGES,"Button",0x10010103,12,235,121,9
++  CONTROL "Don't flood of MusicBrainz",IDC_NOT_MZ_ABUSIVE,"Button",0x10010103,121,30,95,9
+ END
