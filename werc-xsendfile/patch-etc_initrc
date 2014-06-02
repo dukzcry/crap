@@ -1,3 +1,4 @@
+$dukzcry$
 --- initrc		Fri Jun 11 08:28:39 2010
 +++ etc/initrc.local	Tue May 31 16:19:15 2011
 @@ -27,6 +27,11 @@

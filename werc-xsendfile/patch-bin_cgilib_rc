@@ -1,3 +1,4 @@
+$dukzcry$
 --- cgilib.rc		Fri Jun 11 08:28:39 2010
 +++ bin/cgilib.rc	Tue May 31 16:02:39 2011
 @@ -166,9 +167,11 @@ fn get_cookie {

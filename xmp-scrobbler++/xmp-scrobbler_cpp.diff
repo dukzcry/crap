@@ -1,3 +1,4 @@
+$dukzcry$
 --- orig/xmp-scrobbler.cpp	Tue Jun 26 15:23:32 2007
 +++ my/xmp-scrobbler.cpp	Mon Jan 25 04:24:46 2010
 @@ -13,12 +13,18 @@

@@ -1,3 +1,4 @@
+$dukzcry$
 --- orig/data.h	Wed Feb 28 17:21:58 2007
 +++ my/data.h	Tue Jan  5 22:39:20 2010
 @@ -13,6 +13,8 @@ bool XMP_ExtractTags_ID3v2(const char *data, char *art

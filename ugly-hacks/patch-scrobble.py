@@ -1,3 +1,4 @@
+$dukzcry$
 Fix Feature #607 (http://bugs.foocorp.net/issues/607) for Libre.fm
 --- scrobble.py.orig	2011-07-20 14:34:32.000000000 +0400
 +++ scrobble.py	2011-10-20 15:35:55.000000000 +0400

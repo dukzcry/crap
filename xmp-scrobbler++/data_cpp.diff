@@ -1,3 +1,4 @@
+$dukzcry$
 --- orig/data.cpp	Sun Mar 18 22:30:52 2007
 +++ my/data.cpp	Thu Jan  7 01:14:02 2010
 @@ -133,6 +133,69 @@ bool XMP_ExtractTags_Other(const char *data, char *art

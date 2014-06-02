@@ -1,3 +1,4 @@
+$dukzcry$
 --- corehandlers.rc	Fri Jun 11 08:28:39 2010
 +++ bin/corehandlers.rc	Fri May 20 22:56:52 2011
 @@ -129,11 +131,27 @@ fn setup_handlers {
