@@ -1,7 +1,0 @@
-LIB_DEPENDS+= ::graphics/png \ 
-::graphics/jpeg 
-CONFIGURE_ARGS+= --enable-png --enable-jpeg \ 
---with-libpng-includes=/usr/local/include/libpng/ \ 
---with-libjpeg-includes=/usr/local/include/ \ 
---with-libpng-lib=/usr/local/lib/ \ 
---with-libjpeg-lib=/usr/local/lib/ 

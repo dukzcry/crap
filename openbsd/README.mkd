@@ -1,3 +1,0 @@
-##mk.conf-openmotif & openmotif-png-test-pass.patch
-
-OpenMotif that was installed from OpenBSD ports and Motif Window Manager that includes in this port builds without PNG and JPG support (includes dekstop icons for example) and offers only XPM option but PNG and JPG options are must wanted in current XXI century. So we add support. You need modify 'mk.conf' in order to add missing flags and supply patch 'openmotif-png-test-pass.patch'.
