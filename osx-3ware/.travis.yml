@@ -1,5 +1,0 @@
-language: objective-c
-script:
-        - xcodebuild -project Escalade.xcodeproj -configuration Release; xcodebuild -project Escalade.xcodeproj -configuration Debug
-        - sudo chown -R root:wheel build/*/3ware.kext
-        - sudo kextutil build/Release/3ware.kext; sudo kextutil build/Debug/3ware.kext
