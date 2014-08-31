@@ -1,4 +1,0 @@
-Old useless crap. Circa 2006. Was intented to add some shit to original amiwm-0.20pl48 from 1998 year. Few days ago the original developer Marcus updated his stolen project to 0.21pl2 version ftw of Amiga 1000 25'th universary and added new icons style and support of multi-byte encoding locales.
-
-Move to OpenBSD native functions (like snprintf instead of sprintf e.t.c.). Locale is KOI8-R.
-Initiate work on "Workbench" status panel and localize wm to Russian. Locale is KOI8-R.
