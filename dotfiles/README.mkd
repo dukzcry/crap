@@ -1,0 +1,16 @@
+##xorg.conf
+
+Add support for left-handed 'Logitech TrackMan Marble Optical' trackball for X11.
+
+- Right button - left click;
+- Left button - right click;
+- Right small button - hold -> scrolling;
+- Left small button - Paste.
+
+##openbsd/rc.conf.local
+
+Add support for left-handed 'Logitech TrackMan Marble Optical' trackball for console.
+
+- Right button - left click;
+- Left button - right click;
+- Left small button - Paste.

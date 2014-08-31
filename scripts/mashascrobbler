@@ -1,0 +1,52 @@
+#!/bin/bash
+# lastfm scrobbler for mpd
+# Sergey Alirzaev <zl29ah@gmail.com>
+# fixed by dukzcry
+#
+# Deps: mpc, lastfm.pl from w3crapcli, socat
+
+export PATH=$PATH:/usr/local/bin:$HOME/scripts
+
+mpdc() {
+socat tcp-connect:localhost:6600 STDIO
+}
+
+scrobble() {
+#echo Will scrobble $1 in 30 seconds
+sleep 30;
+songid=`mpdc <<< status | sed -ne 's/songid: \(.*\)/\1/p'`
+[[ $songid == $3 ]] && [[ $songid != $lastid ]] &&
+[[ `mpdc <<< status | sed -ne 's/state: \(.*\)/\1/p'` == "play" ]] && {
+echo Scrobbling $1
+eval lastfm.pl $1 $2
+}
+}
+
+mpc idleloop player | while read a; do
+playtime=`mpdc <<< status | sed -ne 's/time: \([0-9]\):./\1/p'`
+[[ $playtime < 2 ]] && {
+artist=`mpc current -f %artist%`
+title=`mpc current -f %title%`
+if [ -n "$artist" ] && [ -n "$title" ]; then
+album=`mpc current -f %album%`
+else
+# A kludge to keep scrobbling untagged/untaggable tracks,
+# usually tracker modules
+# Format: *artist/track
+str=$(mpc current -f %file%)
+artist=`echo $str | sed 's#.*/\(.*\)/.*#\1#'`
+title=`echo $str | sed -e 's/.*\///' -e 's/\(.*\)\..*/\1/'`
+album=""
+fi
+str="\"$artist\" \"$title\" \"$album\""
+
+# A kludge to keep scrobbling tracks w/ undefined playtime
+len=`mpdc <<< status | sed -ne 's/time: [0-9]:\(.\)/\1/p'`
+[[ $len == 0 ]] && len='180'
+
+songid=`mpdc <<< status | sed -ne 's/songid: \(.*\)/\1/p'`
+scrobble "$str" "$len" "$songid" &
+lastid=$songid
+true
+}
+done
