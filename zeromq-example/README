@@ -1,0 +1,1 @@
+An example of communication between Erlang's gen_server and client app in C via ØMQ.

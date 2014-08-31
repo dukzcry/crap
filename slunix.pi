@@ -1,0 +1,33 @@
+% for the sake of good please run it in chroot
+
+import os.
+import sys.
+import io.
+
+bin(X), file(X), executable(X) => true.
+pipe(Cmd,Acc) = Cmd ++ " | " ++ Acc.
+filtered_path(X), X != ".", X != ".." => true.
+
+full_path(Dir,[X|_],Res), filtered_path(X) ?=> Res = Dir ++ "/" ++ X.
+full_path(Dir,[_|Xs],Res) => full_path(Dir,Xs,Res).
+solutions(Dir) = findall(Res,full_path(Dir,listdir(Dir),Res)).
+
+runner_common(List,T,Flag,NewFlag,Score) => T = [F|Fs], Pipeline = fold(pipe,F,Fs), (command(Pipeline ++ ">/dev/null") == 0 ->
+	traverse(List,T,Flag,Score)
+	;
+	printf("[RUNNER %d DEAD at %w]%n",NewFlag,Pipeline), traverse(List,[],NewFlag,Score)).
+runner(X,Flag,List,[A1|A2]), Flag !== 1, {event(X,T)} =>
+	runner_common(List,T,Flag,1,[A1 + 1|A2]).
+runner(X,Flag,List,[A1|A2]), Flag !== 2, {event(X,T)} =>
+	runner_common(List,T,Flag,2,[A1|A2 + 1]).
+
+onemore(List,[File],Flag,Score) => traverse(List,[File],Flag,Score).
+onemore(List,Files,Flag,Score) => runner(X,Flag,List,Score), X.post_event(Files).
+
+traverse([File|Xs],Acc,Flag,Score), bin(File) => onemore(Xs,[File|Acc],Flag,Score).
+% Picat is slow on list operations, but i won't use it's imperative loops instead
+traverse([Dir|Xs],Acc,Flag,Score), directory(Dir) => traverse(solutions(Dir) ++ Xs,Acc,Flag,Score).
+traverse([_|Xs],Acc,Flag,Score) => traverse(Xs,Acc,Flag,Score).
+traverse([],_,_,Score) => writeln(Score).
+
+main => traverse(solutions("/usr/local"),[],_,[0|0]).
