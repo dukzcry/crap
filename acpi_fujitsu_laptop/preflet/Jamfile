@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src preferences fujitsu ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel drivers power acpi_fujitsu_laptop ] ;
+
+Preference FujitsuLaptop :
+	FujitsuLaptop.cpp
+	MainWindow.cpp
+	: be $(TARGET_LIBSUPC++)
+	: FujitsuLaptop.rdef
+	;

@@ -1,0 +1,10 @@
+--- Jamfile.orig	2012-08-01 19:56:00.077332480 +0400
++++ Jamfile	2012-08-01 19:56:36.333185024 +0400
+@@ -9,6 +9,7 @@ SubInclude HAIKU_TOP src preferences des
+ #SubInclude HAIKU_TOP src preferences dun ;
+ SubInclude HAIKU_TOP src preferences filetypes ;
+ SubInclude HAIKU_TOP src preferences fonts ;
++SubInclude HAIKU_TOP src preferences fujitsu ;
+ SubInclude HAIKU_TOP src preferences joysticks ;
+ SubInclude HAIKU_TOP src preferences keyboard ;
+ SubInclude HAIKU_TOP src preferences keymap ;

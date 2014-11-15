@@ -1,0 +1,5 @@
+# Sisong IDE build script
+
+cd /boot/home/src/src/add-ons/kernel/drivers/power/acpi_fujitsu_laptop
+jam -q
+%cp /boot/home/src/generated/objects/haiku/x86/release/add-ons/kernel/drivers/power/acpi_fujitsu_laptop/acpi_fujitsu_laptop /boot/system/add-ons/kernel/drivers/power/

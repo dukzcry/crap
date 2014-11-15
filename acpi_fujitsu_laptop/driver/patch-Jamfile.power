@@ -1,0 +1,8 @@
+--- Jamfile.orig	2012-06-06 21:55:53.483131392 +0400
++++ Jamfile	2012-06-06 21:56:33.884211712 +0400
+@@ -4,4 +4,5 @@ SubInclude HAIKU_TOP src add-ons kernel 
+ SubInclude HAIKU_TOP src add-ons kernel drivers power acpi_button ;
+ SubInclude HAIKU_TOP src add-ons kernel drivers power acpi_lid ;
+ SubInclude HAIKU_TOP src add-ons kernel drivers power acpi_thermal ;
++SubInclude HAIKU_TOP src add-ons kernel drivers power acpi_fujitsu_laptop ;
+ SubInclude HAIKU_TOP src add-ons kernel drivers power enhanced_speedstep ;

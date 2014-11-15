@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons kernel drivers power acpi_fujitsu_laptop ;
+
+
+UsePublicHeaders kernel ;
+
+KernelAddon acpi_fujitsu_laptop :
+	acpi_fujitsu_laptop.c
+	;
+
+Depends acpi_fujitsu_laptop : acpi ;

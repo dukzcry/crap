@@ -1,0 +1,1 @@
+Simple driver + control app for Haiku OS and ACPI real mode on Fujitsu-Siemens laptops. Currently implemented feature is backlight control. Tested on FS P7010.

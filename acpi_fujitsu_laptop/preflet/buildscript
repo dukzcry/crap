@@ -1,0 +1,6 @@
+# Sisong IDE build script
+
+cd /boot/home/src/src/preferences/fujitsu
+jam -q
+%cp /boot/home/src/generated/objects/haiku/x86/release/preferences/fujitsu/FujitsuLaptop /boot/system/preferences/
+#ln -s /boot/system/preferences/FujitsuLaptop /boot/home/config/settings/deskbar/Preferences/
