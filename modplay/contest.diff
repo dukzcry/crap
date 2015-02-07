@@ -1,0 +1,78 @@
+C-t or 'pkill -SIGINFO contest' to pause
+C-c or 'pkill contest' to exit
+
+--- contest.c.bak	2015-01-25 08:37:56.000000000 +0300
++++ contest.c	2015-01-25 09:11:28.000000000 +0300
+@@ -17,8 +17,11 @@
+ 
+ #define Sleep(x) usleep(x*1000)
+ 
+-int _kbhit()
++static int kbhit, kbpause;
++void _kbhit()
+ {
++	kbhit = 1;
++#if 0
+ 	int r;
+ 	fd_set rfds;
+ 	struct timeval tv={0};
+@@ -32,6 +35,11 @@ int _kbhit()
+ 	r=select(1,&rfds,NULL,NULL,&tv);
+ 	tcsetattr(0,TCSANOW,&oterm);
+ 	return r;
++#endif
++}
++void _kbpause()
++{
++	kbpause=!kbpause;
+ }
+ #endif
+ 
+@@ -48,7 +56,7 @@ void main(int argc, char **argv)
+ 	DWORD chan,act,time,level;
+ 	BOOL ismod;
+ 	QWORD pos;
+-	int a;
++	int a, kbpausestate = 0;
+ 
+ 	printf("Simple console mode BASS example : MOD/MPx/OGG/WAV player\n"
+ 			"---------------------------------------------------------\n");
+@@ -69,7 +77,7 @@ void main(int argc, char **argv)
+ 		Error("Can't initialize device");
+ 
+ 	// try streaming the file/url
+-	if ((chan=BASS_StreamCreateFile(FALSE,argv[1],0,0,BASS_SAMPLE_LOOP))
++	if ((chan=BASS_StreamCreateFile(FALSE,argv[1],0,0,0))
+ 		|| (chan=BASS_StreamCreateURL(argv[1],0,BASS_SAMPLE_LOOP,0,0))) {
+ 		pos=BASS_ChannelGetLength(chan,BASS_POS_BYTE);
+ 		if (BASS_StreamGetFilePosition(chan,BASS_FILEPOS_DOWNLOAD)!=-1) {
+@@ -90,8 +98,8 @@ void main(int argc, char **argv)
+ #endif
+ 		ismod=FALSE;
+ 	} else {
+-		// try loading the MOD (with looping, sensitive ramping, and calculate the duration)
+-		if (!(chan=BASS_MusicLoad(FALSE,argv[1],0,0,BASS_SAMPLE_LOOP|BASS_MUSIC_RAMPS|BASS_MUSIC_PRESCAN,1)))
++		// try loading the MOD (with no looping, sensitive ramping, and calculate the duration)
++		if (!(chan=BASS_MusicLoad(FALSE,argv[1],0,0,BASS_MUSIC_STOPBACK|BASS_MUSIC_RAMPS|BASS_MUSIC_PRESCAN,1)))
+ 			// not a MOD either
+ 			Error("Can't play the file");
+ 		{ // count channels
+@@ -113,7 +121,17 @@ void main(int argc, char **argv)
+ 
+ 	BASS_ChannelPlay(chan,FALSE);
+ 
+-	while (!_kbhit() && (act=BASS_ChannelIsActive(chan))) {
++	signal(SIGINT, _kbhit);
++	signal(SIGINFO, _kbpause);
++	while (!kbhit && (act=BASS_ChannelIsActive(chan))) {
++		if (kbpause && !kbpausestate) {
++			BASS_ChannelPause(chan);
++			kbpausestate=1;
++		} else if (!kbpause && kbpausestate) {
++			BASS_ChannelPlay(chan,FALSE);
++			kbpausestate=0;
++		}
++
+ 		// display some stuff and wait a bit
+ 		level=BASS_ChannelGetLevel(chan);
+ 		pos=BASS_ChannelGetPosition(chan,BASS_POS_BYTE);

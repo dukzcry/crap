@@ -1,0 +1,1 @@
+A quick hack to play tracker music on *nix. Uses best in the world playback engines Unix Amiga Delitracker Emulator and ~~BASS audio library~~. Plays modules packed in archives, like taken from Amiga Music Preservation site and also scrobbles to Last.fm.
