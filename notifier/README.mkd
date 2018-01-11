@@ -1,0 +1,1 @@
+Creates per-program tray item with libnotify message buffer. Backups messages in database. Draws badge with number of messages.
