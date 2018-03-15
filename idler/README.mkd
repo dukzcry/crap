@@ -1,1 +1,5 @@
 Poor man power manager. Is akin to xautolock or xss-lock, but also works in Wayland and console, since activity tracking is done via evdev. Takes battery state into consideration.
+
+1. curl https://nixos.org/nix/install | sh
+2. Edit settings at the top of script to match your needs
+3. Run this script. Use `-d` command line argument to run it in background

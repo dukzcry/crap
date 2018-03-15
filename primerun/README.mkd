@@ -1,1 +1,8 @@
-A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee is complex, slow and has no Vulkan support. Nvidia-xrun doesn't handle some critical issues and also needs to be run from another console. This solution will be dropped once Nvidia will add render offload device support.
+A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee is complex, slow and has no Vulkan support. Nvidia-xrun doesn't handle some critical issues and also needs to be run from another console.
+
+This solution will be dropped once Nvidia will add render offload device support.
+
+1. Ensure your system has nvidia drivers installed (actually only kernel modules are needed)
+2. curl https://nixos.org/nix/install | sh
+3. Edit settings at the top of script to match your needs
+4. Run your program via `primerun.sh <yourgame>`
