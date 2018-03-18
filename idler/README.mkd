@@ -2,4 +2,4 @@ Poor man power manager. Is akin to xautolock or xss-lock, but also works in Wayl
 
 1. curl https://nixos.org/nix/install | sh
 2. Edit settings at the top of script to match your needs
-3. Run this script. Use `-d` command line argument to run it in background
+3. Run this script. Use `-f` command line argument to debug

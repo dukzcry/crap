@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p "python3.withPackages(ps: with ps; [ evdev daemonize ])"
+#!nix-shell -i python3 -p "python3.withPackages(ps: with ps; [ evdev ])"
 
 # bug: while stucked waiting for an input event we can't account new device if such was added
 
@@ -7,12 +7,10 @@ from time import sleep
 from datetime import datetime
 from threading import Timer
 from select import select
-from os import system
 from sys import argv
 from glob import glob
-from daemonize import Daemonize
 import evdev.ecodes as ecodes
-import evdev,logging
+import evdev,logging,socket,os
 
 alarm_interval = 600
 throttle_interval = 60
@@ -20,8 +18,8 @@ jitter = 10
 low_battery_level = range(0, 6)
 battery_path = "/sys/class/power_supply/BAT?/"
 adapter_path = "/sys/class/power_supply/ADP?/"
-log_file = "/tmp/idler.log"
-pid_file = "/tmp/idler.pid"
+progname = "idler"
+log_file = "/tmp/"+progname+".log"
 ac_command = "sudo pkill physlock; sudo physlock -d"
 wakeup_command = ac_command
 battery_command = ac_command + "; sudo systemctl suspend"
@@ -60,15 +58,15 @@ def wakeup(ctx, update):
 def idleHandler(ctx):
     if wakeup(ctx, True):
         logging.warning("wakeup action")
-        system(wakeup_command)
+        os.system(wakeup_command)
         return
 
     if ctx.adapterPresent == 0:
         logging.warning("battery action")
-        system(battery_command)
+        os.system(battery_command)
     else:
         logging.warning("ac action")
-        system(ac_command)
+        os.system(ac_command)
 
 def idleStartHandler(ctx):
     ctx.time = datetime.now()
@@ -79,7 +77,7 @@ def batteryHandler(ctx):
     if newAdapterPresent == 0 and batteryCapacity() in low_battery_level:
         ctx.idle_timer.stop()
         logging.warning("low battery action")
-        system(low_battery_command)
+        os.system(low_battery_command)
     elif ctx.adapterPresent != newAdapterPresent:
         if not wakeup(ctx, False):
             ctx.idle_timer.reset()
@@ -145,9 +143,13 @@ class Main:
                 self.idle_timer.reset()
             sleep(throttle_interval)
 
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+sock.bind('\0' + progname)
+
 program = Main()
-if len(argv) == 2 and argv[1] == "-d":
-    daemon = Daemonize(app="idler", pid=pid_file, action=program.main)
-    daemon.start()
-else:
+if len(argv) == 2 and argv[1] == "-f":
     program.main()
+else:
+    pid = os.fork()
+    if pid == 0:
+        program.main()

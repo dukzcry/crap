@@ -5,4 +5,4 @@ Creates per-program tray item with libnotify message buffer. Backups messages in
 1. curl https://nixos.org/nix/install | sh
 2. Edit settings at the top of script to match your needs
 3. Ensure you have notification daemon (like dunst) running
-4. Run this script
+4. Run this script. Use `-f` command line argument to debug

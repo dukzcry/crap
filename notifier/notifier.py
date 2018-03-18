@@ -358,4 +358,9 @@ finally:
     session_.close()
 
 mainloop = GLib.MainLoop()
-mainloop.run()
+if len(argv) == 2 and argv[1] == "-f":
+    mainloop.run()
+else:
+    pid = os.fork()
+    if pid == 0:
+        mainloop.run()
