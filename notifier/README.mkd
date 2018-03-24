@@ -1,4 +1,4 @@
-![](screenshot.png)
+![](https://user-images.githubusercontent.com/333093/37870177-2b48523e-2fd8-11e8-960d-0adff481959e.png)
 
 Creates per-program tray item with libnotify message buffer. Backups messages in database. Draws badge with number of messages.
 
