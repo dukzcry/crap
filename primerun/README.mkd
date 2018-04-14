@@ -6,3 +6,4 @@ This solution will be dropped once Nvidia will add render offload device support
 2. curl https://nixos.org/nix/install | sh
 3. Edit settings at the top of script to match your needs
 4. Run this script as `primerun.sh <yourgame>`
+5. In case of errors see the output for tips, it will say where Xorg log is
