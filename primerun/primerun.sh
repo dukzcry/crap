@@ -46,6 +46,7 @@ Section "InputClass"
         Driver "libinput"
         Option "Tapping" "on"
         Option "DisableWhileTyping" "off"
+        Option "MiddleEmulation" "on"
 EndSection
 
 Section "Module"
