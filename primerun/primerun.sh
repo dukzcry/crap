@@ -72,7 +72,7 @@ export VK_ICD_FILENAMES="$(nix-build --no-out-link -E 'with import <nixpkgs> {};
 export OCL_ICD_VENDORS="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; '$package'.override { libsOnly = true; kernel = null; }')/etc/OpenCL/vendors/nvidia.icd";
 # https://bugzilla.gnome.org/show_bug.cgi?id=774775
 export GDK_BACKEND=x11
-"$@"
+$@
 EOF
 chmod +x $tmpdir/session
 
