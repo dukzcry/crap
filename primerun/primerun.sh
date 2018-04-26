@@ -13,15 +13,6 @@ package="linuxPackages.nvidia_x11"
 busid="PCI:1:0:0"
 
 mkdir -p $tmpdir/modules
-if [ -z "$XAUTHORITY" ]; then
-  export XAUTHORITY=$HOME/.Xauthority
-fi
-# module nvidia_drm is in use
-if [ "$(fgconsole)" == "$console" ]; then
-  echo "You need to run $0 from another console"
-  exit 1
-fi
-
 cat > $tmpdir/xorg.conf << EOF
 Section "Files"
     ModulePath "$(nix-build --no-out-link '<nixpkgs>' -A xorg.xf86inputlibinput)/lib/xorg/modules/input"
@@ -62,6 +53,24 @@ Section "Device"
     Option "AllowEmptyInitialConfiguration"
 EndSection
 EOF
+
+red='\033[0;31m'
+if [ ! -d $tmpdir ]; then
+  echo -e "$red Given tmpdir doesn't exist"
+  exit 1
+fi
+if [ "$1" == "" ]; then
+  echo -e "$red Give path to game as argument"
+  exit 1
+fi
+# module nvidia_drm is in use
+if [ "$(fgconsole)" == "$console" ]; then
+  echo -e "$red You need to run $0 from another console"
+  exit 1
+fi
+if [ -z "$XAUTHORITY" ]; then
+  export XAUTHORITY=$HOME/.Xauthority
+fi
 
 cat > $tmpdir/session << EOF
 #!/bin/sh
