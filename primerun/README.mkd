@@ -5,5 +5,4 @@ This solution will be dropped once Nvidia will add render offload device support
 1. Ensure your system has nvidia drivers installed (actually only kernel modules are needed)
 2. curl https://nixos.org/nix/install | sh
 3. Edit settings at the top of script to match your needs
-4. Run this script as `primerun.sh <your game>` or `primerun.sh <your desktop environment>` for most of games.
-5. In case of errors see the output for tips, it will say where Xorg log is for further investigation
+4. Run this script as `primerun.sh <your game>` or `primerun.sh <your window manager>` for most of games

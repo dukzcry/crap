@@ -9,6 +9,8 @@ console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages at https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix#L14
 package="linuxPackages.nvidia_x11"
+# your nvidia card in lspci output
+busid="PCI:1:0:0"
 
 mkdir -p $tmpdir/modules
 if [ -z "$XAUTHORITY" ]; then
@@ -56,7 +58,7 @@ EndSection
 Section "Device"
     Identifier "nvidia"
     Driver "nvidia"
-    BusID "PCI:1:0:0"
+    BusID "$busid"
     Option "AllowEmptyInitialConfiguration"
 EndSection
 EOF
