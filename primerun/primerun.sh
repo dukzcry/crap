@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p xorg.xinit linuxPackages.bbswitch xorg.xorgserver xorg.xrandr
+#!nix-shell -i bash -p "with xorg; [ xinit xorgserver xrandr ]" linuxPackages.bbswitch pciutils gawk
 
 # if systemd is used and you need sound, login to $console prior https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=747882
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
@@ -10,8 +10,7 @@ console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages at https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix#L14
 package="linuxPackages.nvidia_x11"
-# your nvidia card in lspci output
-busid="PCI:1:0:0"
+busid=`lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}'`
 
 mkdir -p $tmpdir/modules
 cat > $tmpdir/xorg.conf << EOF
@@ -62,6 +61,10 @@ if [ ! -d $tmpdir ]; then
 fi
 if [ "$1" == "" ]; then
   echo -e "$red Give path to game as argument"
+  exit 1
+fi
+if [ "$busid" == "" ]; then
+  echo -e "$red No Optimus card found"
   exit 1
 fi
 # module nvidia_drm is in use
