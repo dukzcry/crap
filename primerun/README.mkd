@@ -2,7 +2,8 @@ A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee 
 
 This solution will be dropped once Nvidia will add render offload device support.
 
-1. Ensure your system has nvidia drivers installed (actually only kernel modules are needed)
+1. Install Nvidia drivers for your distro (kernel modules)
+2. Optionally install bbswitch if you need power management (kernel module)
 2. curl https://nixos.org/nix/install | sh
 3. Edit settings at the top of script to match your needs
 4. Run this script as `primerun.sh <your game>`
