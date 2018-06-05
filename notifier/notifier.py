@@ -1,8 +1,6 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig ])"
 
-# note that db sorting key is not unique enough, so expect to loose mass messages, on other hand it could be considered as flood protection
-
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Notify', '0.7')
@@ -172,7 +170,7 @@ def notifications(bus, message):
                 table = create_metadata(name, metadata)
                 table.create()
                 mapper(Message, table)
-            message = Message(args, int(time.time()))
+            message = Message(args, int(str(time.time()).replace('.','')) )
             menu_item(message, indicator)
             session = Session()
             try:
