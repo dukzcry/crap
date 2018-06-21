@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p xorg.xinit pciutils gawk
+#!nix-shell -p xorg.xinit pciutils gawk
 
 # if systemd is used and you need sound, login to $console prior https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=747882
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
@@ -79,7 +79,7 @@ fi
 
 cat > $tmpdir/session << EOF
 #!/usr/bin/env nix-shell
-#!nix-shell -i sh -p xorg.xrandr
+#!nix-shell -p xorg.xrandr
 xrandr --setprovideroutputsource modesetting NVIDIA-0
 xrandr --auto
 export LD_LIBRARY_PATH="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; buildEnv { name = "nvidia-libs"; paths = [ libglvnd ('$package'.override { libsOnly = true; kernel = null; }) ]; }')/lib`
