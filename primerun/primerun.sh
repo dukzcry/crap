@@ -11,6 +11,7 @@ tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages at https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix#L14
 package="linuxPackages.nvidia_x11"
 busid=`lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}'`
+kernel="$(uname -r)"
 
 mkdir -p $tmpdir/modules
 cat > $tmpdir/xorg.conf << EOF
@@ -112,7 +113,14 @@ chmod +x $tmpdir/X
 ln -sf $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/lib/xorg/modules/* $tmpdir/modules
 rm $tmpdir/modules/libglamoregl.so
 
-sudo modprobe bbswitch
+if [ -e /etc/nixos ]; then
+  # for test
+  bbswitch="$(nix-build --no-out-link -E 'with import <nixpkgs/nixos> {}; let custom = config.boot.kernelPackages; default = pkgs.linuxPackages; in default.bbswitch.override { kernel = default.kernel // { modDirVersion = "'$kernel'"; inherit (custom.kernel) dev; }; }')"
+else
+  bbswitch="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; let default = linuxPackages; in default.bbswitch.override { kernel = default.kernel // { modDirVersion = "'$kernel'"; dev = ""; }; }')"
+fi
+
+sudo insmod $bbswitch/lib/modules/$kernel/misc/bbswitch.ko
 sudo tee /proc/acpi/bbswitch <<<ON
 for m in nvidia nvidia_modeset nvidia_drm nvidia_uvm
 do
