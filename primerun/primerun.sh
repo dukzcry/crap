@@ -82,11 +82,57 @@ cat > $tmpdir/session << EOF
 #!nix-shell -i sh -p xorg.xrandr
 xrandr --setprovideroutputsource modesetting NVIDIA-0
 xrandr --auto
-export LD_LIBRARY_PATH="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; buildEnv { name = "nvidia-libs"; paths = [ libglvnd ('$package'.override { libsOnly = true; kernel = null; }) ]; }')/lib`
-  `:$(nix-build --no-out-link -E 'with import <nixpkgs> {}; buildEnv { name = "nvidia-libs-32"; paths = with pkgsi686Linux; [ libglvnd ('$package'.override { libsOnly = true; kernel = null; }) ]; }')/lib"
-#export PATH="\$(nix-build --no-out-link -E 'with import <nixpkgs> {}; buildEnv { name = "nvidia-bin"; paths = [ '$package'.settings '$package'.bin ]; }')/bin:$PATH"
-export VK_ICD_FILENAMES="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; '$package'.override { libsOnly = true; kernel = null; }')/share/vulkan/icd.d/nvidia.json";
-export OCL_ICD_VENDORS="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; '$package'.override { libsOnly = true; kernel = null; }')/etc/OpenCL/vendors/nvidia.icd";
+export LD_LIBRARY_PATH="$(nix-build --no-out-link -E '
+  with import <nixpkgs> {};
+
+  buildEnv {
+    name = "nvidia-libs";
+    paths = [
+      libglvnd
+      ('$package'.override {
+        libsOnly = true;
+        kernel = null;
+      })
+    ];
+  }
+')/lib`
+  `:$(nix-build --no-out-link -E '
+    with import <nixpkgs> {};
+
+    buildEnv {
+      name = "nvidia-libs-32";
+      paths = with pkgsi686Linux; [
+        libglvnd
+        ('$package'.override {
+          libsOnly = true;
+          kernel = null;
+        })
+      ];
+  }')/lib"
+#export PATH="\$(nix-build --no-out-link -E '
+#  with import <nixpkgs> {};
+#
+#  buildEnv {
+#    name = "nvidia-bin";
+#    paths = [ '$package'.settings '$package'.bin ];
+#  }
+#')/bin:\$PATH"
+export VK_ICD_FILENAMES="$(nix-build --no-out-link -E '
+  with import <nixpkgs> {};
+
+  '$package'.override {
+    libsOnly = true;
+    kernel = null;
+  }
+')/share/vulkan/icd.d/nvidia.json";
+export OCL_ICD_VENDORS="$(nix-build --no-out-link -E '
+  with import <nixpkgs> {};
+
+  '$package'.override {
+    libsOnly = true;
+    kernel = null;
+  }
+')/etc/OpenCL/vendors/nvidia.icd";
 # https://bugzilla.gnome.org/show_bug.cgi?id=774775
 export GDK_BACKEND=x11
 $@
@@ -114,17 +160,56 @@ ln -sf $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/lib/xorg/module
 rm $tmpdir/modules/libglamoregl.so
 
 if [ -e /etc/nixos ]; then
-  # for test
-  bbswitch="$(nix-build --no-out-link -E 'with import <nixpkgs/nixos> {}; let custom = config.boot.kernelPackages; default = pkgs.linuxPackages; in default.bbswitch.override { kernel = default.kernel // { modDirVersion = "'$kernel'"; inherit (custom.kernel) dev; }; }')"
+  # to check next rules
+  bbswitch="$(nix-build --no-out-link -E '
+    with import <nixpkgs/nixos> {};
+
+    let
+      custom = config.boot.kernelPackages;
+      default = pkgs.linuxPackages;
+    in default.bbswitch.override {
+      kernel = default.kernel // {
+        modDirVersion = "'$kernel'";
+        inherit (custom.kernel) dev;
+      };
+    }
+  ')"
+  nvidia="$(nix-build --no-out-link -E '
+    with import <nixpkgs/nixos> {};
+
+    let
+      custom = config.boot.kernelPackages;
+    in (pkgs.'$package'.overrideAttrs (oldAttrs: rec {
+      kernel = custom.kernel.dev;
+    })).bin
+  ')"
 else
-  bbswitch="$(nix-build --no-out-link -E 'with import <nixpkgs> {}; let default = linuxPackages; in default.bbswitch.override { kernel = default.kernel // { modDirVersion = "'$kernel'"; dev = ""; }; }')"
+  bbswitch="$(nix-build --no-out-link -E '
+    with import <nixpkgs> {};
+
+    let
+      default = linuxPackages;
+    in default.bbswitch.override {
+      kernel = default.kernel // {
+        modDirVersion = "'$kernel'";
+        dev = "";
+      };
+    }
+  ')"
+  nvidia="$(nix-build --no-out-link -E '
+    with import <nixpkgs> {};
+
+    ('$package'.overrideAttrs (oldAttrs: rec {
+      kernel = "";
+    })).bin
+  ')"
 fi
 
 sudo insmod $bbswitch/lib/modules/$kernel/misc/bbswitch.ko
 sudo tee /proc/acpi/bbswitch <<<ON
-for m in nvidia nvidia_modeset nvidia_drm nvidia_uvm
+for m in nvidia nvidia-modeset nvidia-drm nvidia-uvm
 do
-  sudo modprobe $m
+  sudo insmod $nvidia/lib/modules/$kernel/misc/$m.ko
 done
 
 # xinit is unsecure
