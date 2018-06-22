@@ -207,6 +207,8 @@ fi
 
 sudo insmod $bbswitch/lib/modules/$kernel/misc/bbswitch.ko
 sudo tee /proc/acpi/bbswitch <<<ON
+
+sudo modprobe ipmi_devintf
 for m in nvidia nvidia-modeset nvidia-drm nvidia-uvm
 do
   sudo insmod $nvidia/lib/modules/$kernel/misc/$m.ko
