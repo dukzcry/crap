@@ -180,6 +180,7 @@ if [ -e /etc/nixos ]; then
     let
       custom = config.boot.kernelPackages;
     in (pkgs.'$package'.overrideAttrs (oldAttrs: rec {
+      kernelVersion = "'$kernel'";
       kernel = custom.kernel.dev;
     })).bin
   ')"
@@ -200,6 +201,7 @@ else
     with import <nixpkgs> {};
 
     ('$package'.overrideAttrs (oldAttrs: rec {
+      kernelVersion = "'$kernel'";
       kernel = "";
     })).bin
   ')"
