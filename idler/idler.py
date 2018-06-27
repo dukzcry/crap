@@ -15,6 +15,7 @@ import evdev,logging,socket,os
 alarm_interval = 600
 throttle_interval = 60
 jitter = 10
+no_battery = False
 low_battery_level = range(0, 6)
 battery_path = "/sys/class/power_supply/BAT?/"
 adapter_path = "/sys/class/power_supply/ADP?/"
@@ -91,6 +92,8 @@ def batteryCapacity():
         return int(myfile.read().replace("\n", ""))
 
 def adapterPresent():
+    if no_battery:
+        return 1
     [path] = glob(adapter_path)
     with open(path + "online", "r") as myfile:
         return int(myfile.read().replace("\n", ""))
@@ -117,7 +120,8 @@ class Main:
         logging.basicConfig(format="%(asctime)s %(message)s", filename=log_file)
         logging.getLogger().addHandler(logging.StreamHandler())
 
-        self.battery_timer = Watchdog(throttle_interval, batteryHandler, self)
+        if not no_battery:
+            self.battery_timer = Watchdog(throttle_interval, batteryHandler, self)
         self.idle_timer = Watchdog(alarm_interval, idleHandler, self, idleStartHandler)
 
         logging.warning("started")
