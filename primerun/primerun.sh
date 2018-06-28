@@ -209,6 +209,7 @@ else
     (('$package'.override { stdenv = overrideCC stdenv gcc'$kernel_cc_major'; }).overrideAttrs (oldAttrs: rec {
       kernelVersion = "'$kernel'";
       kernel = "";
+      NIX_ENFORCE_PURITY = 0;
     })).bin
   ')"
 fi
