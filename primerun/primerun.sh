@@ -12,6 +12,7 @@ tmpdir=$XDG_RUNTIME_DIR/nvidia
 package="linuxPackages.nvidia_x11"
 busid=`lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}'`
 kernel="$(uname -r)"
+gcc="gcc8"
 
 mkdir -p $tmpdir/modules
 cat > $tmpdir/xorg.conf << EOF
@@ -202,10 +203,9 @@ else
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 
-    ('$package'.overrideAttrs (oldAttrs: rec {
+    (('$package'.override { stdenv = overrideCC stdenv $gcc; }).overrideAttrs (oldAttrs: rec {
       kernelVersion = "'$kernel'";
       kernel = "";
-      IGNORE_CC_MISMATCH = 1;
     })).bin
   ')"
 fi
