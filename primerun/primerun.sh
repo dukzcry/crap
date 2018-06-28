@@ -203,7 +203,7 @@ else
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 
-    (('$package'.override { stdenv = overrideCC stdenv $gcc; }).overrideAttrs (oldAttrs: rec {
+    (('$package'.override { stdenv = overrideCC stdenv '$gcc'; }).overrideAttrs (oldAttrs: rec {
       kernelVersion = "'$kernel'";
       kernel = "";
     })).bin
