@@ -129,7 +129,8 @@ class KNotifier():
         indicator.setIconByPixmap(QIcon(path))
 
 class Message_(object):
-    def __init__(self, args, time):
+    def __init__(self, args, key, time):
+        self.key = key
         self.time = time
         # https://developer.gnome.org/notification-spec/
         self.app_name = args[0]
@@ -148,7 +149,8 @@ class Message_(object):
 
 def create_metadata(name, metadata):
     return Table(name, metadata,
-        Column('time',Integer,primary_key=True),
+        Column('key',Integer,primary_key=True),
+        Column('time',Integer),
         Column('app_name',String),
         Column('replaces_id',Integer),
         Column('app_icon',String),
@@ -162,7 +164,7 @@ def notifications(bus, message):
     try:
         args = message.get_args_list()
         if message.get_member() == "Notify" and message.get_interface() == "org.freedesktop.Notifications" and len(args) == 8:
-            name = Message_(args, 0).name
+            name = Message_(args, 0, 0).name
             (Message,indicator) = get_mapping(name, Message_)
             excess(name, Message, indicator)
             notifier.show_icon(indicator, True)
@@ -170,7 +172,8 @@ def notifications(bus, message):
                 table = create_metadata(name, metadata)
                 table.create()
                 mapper(Message, table)
-            message = Message(args, int(str(time.time()).replace('.','')) )
+            timetime = time.time()
+            message = Message(args, int(str(timetime).replace('.','')), int(timetime))
             menu_item(message, indicator)
             session = Session()
             try:
@@ -191,10 +194,10 @@ def excess(name, message, indicator):
     session = Session()
     real_limit = limit-1
     try:
-        items = session.query(message).order_by(desc(message.time)).all()
+        items = session.query(message).order_by(desc(message.key)).all()
         session.commit()
         if len(items) > real_limit:
-            clear(name, [item.time for item in items[real_limit:]])
+            clear(name, [item.key for item in items[real_limit:]])
             for item in reversed(items[:real_limit]):
                 menu_item(item, indicator)
     except Exception as msg:
@@ -215,7 +218,7 @@ def clear(name, items=None):
     session = Session()
     try:
         if items is not None:
-            session.query(message).filter(message.time.in_(items)).delete(synchronize_session='fetch')
+            session.query(message).filter(message.key.in_(items)).delete(synchronize_session='fetch')
         else:
             session.query(message).delete()
         session.commit()
