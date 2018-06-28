@@ -12,7 +12,6 @@ tmpdir=$XDG_RUNTIME_DIR/nvidia
 package="linuxPackages.nvidia_x11"
 busid=`lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}'`
 kernel="$(uname -r)"
-gcc="gcc8"
 
 mkdir -p $tmpdir/modules
 cat > $tmpdir/xorg.conf << EOF
@@ -200,10 +199,14 @@ else
   ')"
   # needed for arch
   sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source
+  local kernel_compile_h=/lib/modules/$kernel/source/include/generated/compile.h
+  local kernel_cc_string=`cat ${kernel_compile_h} | grep LINUX_COMPILER | cut -f 2 -d '"'`
+  local kernel_cc_version=`echo ${kernel_cc_string} | grep -o '[0-9]\+\.[0-9]\+' | head -n 1`
+  local kernel_cc_major=`echo ${kernel_cc_version} | cut -d '.' -f 1`
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 
-    (('$package'.override { stdenv = overrideCC stdenv '$gcc'; }).overrideAttrs (oldAttrs: rec {
+    (('$package'.override { stdenv = overrideCC stdenv '$kernel_cc_major'; }).overrideAttrs (oldAttrs: rec {
       kernelVersion = "'$kernel'";
       kernel = "";
     })).bin
