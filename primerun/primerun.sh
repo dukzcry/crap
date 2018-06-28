@@ -160,7 +160,7 @@ ln -sf $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/lib/xorg/module
 rm $tmpdir/modules/libglamoregl.so
 
 if [ -e /etc/nixos ]; then
-  # to check next rules
+  # complicated to always check non-nixos rules on nixos
   bbswitch="$(nix-build --no-out-link -E '
     with import <nixpkgs/nixos> {};
 
@@ -197,6 +197,8 @@ else
       };
     }
   ')"
+  # needed for arch
+  sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 
