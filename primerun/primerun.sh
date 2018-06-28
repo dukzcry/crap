@@ -199,6 +199,7 @@ else
   ')"
   # needed for arch
   sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source
+  export IGNORE_CC_MISMATCH=1
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 
