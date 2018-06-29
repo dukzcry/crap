@@ -78,10 +78,9 @@ if [ -z "$XAUTHORITY" ]; then
 fi
 
 cat > $tmpdir/session << EOF
-#!/usr/bin/env nix-shell
-#!nix-shell -i sh -p xorg.xrandr
-xrandr --setprovideroutputsource modesetting NVIDIA-0
-xrandr --auto
+#!/bin/sh
+$(nix-build --no-out-link '<nixpkgs>' -A xorg.xrandr)/bin/xrandr --setprovideroutputsource modesetting NVIDIA-0
+$(nix-build --no-out-link '<nixpkgs>' -A xorg.xrandr)/bin/xrandr --auto
 export LD_LIBRARY_PATH="$(nix-build --no-out-link -E '
   with import <nixpkgs> {};
 
