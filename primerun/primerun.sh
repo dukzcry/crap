@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i sh -p xorg.xinit pciutils gawk
+#!/bin/sh
 
 # if systemd is used and you need sound, login to $console prior https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=747882
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
@@ -10,7 +9,7 @@ console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages at https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix#L14
 package="linuxPackages.nvidia_x11"
-busid=`lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}'`
+busid=$($(nix-build --no-out-link '<nixpkgs>' -A pciutils)/bin/lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}')
 kernel="$(uname -r)"
 
 mkdir -p $tmpdir/modules
@@ -226,8 +225,9 @@ do
   sudo insmod $nvidia/lib/modules/$kernel/misc/$m.ko
 done
 
+xinit=$(nix-build --no-out-link '<nixpkgs>' -A xorg.xinit)/bin
 # xinit is unsecure
-sudo startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile /var/log/X.$display.log vt$console
+sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile /var/log/X.$display.log vt$console
 sudo chown $USER $XAUTHORITY
 
 for m in nvidia_uvm nvidia_drm nvidia_modeset nvidia
