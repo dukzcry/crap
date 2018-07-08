@@ -68,7 +68,7 @@ if [ "$busid" == "" ]; then
   exit 1
 fi
 # module nvidia_drm is in use
-if [ "$(fgconsole)" == "$console" ]; then
+if [ "$(sudo fgconsole)" == "$console" ]; then
   echo -e "$red You need to run $0 from another console"
   exit 1
 fi
