@@ -7,7 +7,7 @@
 display=1
 console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
-# see alternative packages at https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/hardware/video/nvidia.nix#L14
+# see alternative packages with "nix-instantiate --eval -E 'with import <nixpkgs> {}; linuxPackages.nvidiaPackages'"
 package="linuxPackages.nvidia_x11"
 busid=$($(nix-build --no-out-link '<nixpkgs>' -A pciutils)/bin/lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}')
 kernel="$(uname -r)"
@@ -153,10 +153,6 @@ exec $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/bin/X "\$@"
 EOF
 chmod +x $tmpdir/X
 
-# https://bugs.freedesktop.org/show_bug.cgi?id=94577
-ln -sf $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/lib/xorg/modules/* $tmpdir/modules
-rm $tmpdir/modules/libglamoregl.so
-
 if [ -e /etc/nixos ]; then
   # complicated to always check non-nixos rules on nixos
   bbswitch="$(nix-build --no-out-link -E '
@@ -225,9 +221,13 @@ do
   sudo insmod $nvidia/lib/modules/$kernel/misc/$m.ko
 done
 
+# https://bugs.freedesktop.org/show_bug.cgi?id=94577
+ln -sf $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/lib/xorg/modules/* $tmpdir/modules
+rm $tmpdir/modules/libglamoregl.so
+
 xinit=$(nix-build --no-out-link '<nixpkgs>' -A xorg.xinit)/bin
 # xinit is unsecure
-sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile /var/log/X.$display.log vt$console
+sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile $tmpdir/X.log vt$console
 sudo chown $USER $XAUTHORITY
 
 for m in nvidia_uvm nvidia_drm nvidia_modeset nvidia
