@@ -2,7 +2,8 @@
 
 Creates per-program tray item with libnotify message buffer. Backups messages in database. Draws badge with number of messages.
 
-1. curl https://nixos.org/nix/install | sh
+1. pip3 install -r requirements.txt
 2. Edit settings at the top of script to match your needs
-3. Ensure you have notification daemon (like dunst) installed
-4. Run this script. Use `-f` command line argument to debug
+3. Install system dependencies you miss either for AppIndicator3 or for KStatusNotifierItem
+4. Ensure you have notification daemon (like dunst) installed
+5. Run this script. Use `-f` command line argument to debug

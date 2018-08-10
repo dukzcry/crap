@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig ])"
+#!/usr/bin/env python3
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -11,6 +10,7 @@ import dbus
 import time
 import os
 import socket
+from sys import argv
 from urllib.parse import urlparse
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
@@ -43,7 +43,6 @@ size = (128, 128)
 #notifierClass = lambda: GNotifier()
 
 from PyQt4.Qt import QApplication, QIcon
-from sys import argv
 import PyKDE4.kdeui as kdeui
 notifierClass = lambda: KNotifier()
 ######
