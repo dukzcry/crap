@@ -1,13 +1,11 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig notify2 ])"
+#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig ])"
 
 import gi
 gi.require_version('Gtk', '3.0')
-#gi.require_version('Notify', '0.7')
-#from gi.repository import Notify
+gi.require_version('Notify', '0.7')
+from gi.repository import Notify
 from gi.repository.Gtk import IconTheme
-
-import notify2
 
 import dbus
 import time
@@ -318,10 +316,8 @@ if not os.path.exists(dir):
 notifier = notifierClass()
 
 # bring notification daemon in case it's not running
-#Notify.init(progname)
-#Notify.Notification.new("started " + progname).show()
-notify2.init(progname)
-notify2.Notification("started " + progname).show()
+Notify.init(progname)
+Notify.Notification.new("started " + progname).show()
 
 DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()

@@ -1,6 +1,0 @@
-#pgi
-dbus-python
-sqlalchemy
-pillow
-python-fontconfig
-notify2
