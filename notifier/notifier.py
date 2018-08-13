@@ -1,18 +1,16 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "[ libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ dbus-python sqlalchemy pillow python-fontconfig notify2 ])"
+#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig ])"
 
 import gi
 gi.require_version('Gtk', '3.0')
-#gi.require_version('Notify', '0.7')
-#from gi.repository import Notify
-import notify2
+gi.require_version('Notify', '0.7')
+from gi.repository import Notify
 from gi.repository.Gtk import IconTheme
 
 import dbus
 import time
 import os
 import socket
-from sys import argv
 from urllib.parse import urlparse
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
@@ -39,14 +37,15 @@ limit = 30
 
 size = (128, 128)
 
-gi.require_version('AppIndicator3', '0.1')
-from gi.repository import AppIndicator3
-from gi.repository import Gtk
-notifierClass = lambda: GNotifier()
+#gi.require_version('AppIndicator3', '0.1')
+#from gi.repository import AppIndicator3
+#from gi.repository import Gtk
+#notifierClass = lambda: GNotifier()
 
-#from PyQt4.Qt import QApplication, QIcon
-#import PyKDE4.kdeui as kdeui
-#notifierClass = lambda: KNotifier()
+from PyQt4.Qt import QApplication, QIcon
+from sys import argv
+import PyKDE4.kdeui as kdeui
+notifierClass = lambda: KNotifier()
 ######
 
 class GNotifier():
@@ -317,10 +316,8 @@ if not os.path.exists(dir):
 notifier = notifierClass()
 
 # bring notification daemon in case it's not running
-#Notify.init(progname)
-#Notify.Notification.new("started " + progname).show()
-notify2.init(progname)
-notify2.Notification("started " + progname).show()
+Notify.init(progname)
+Notify.Notification.new("started " + progname).show()
 
 DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()
