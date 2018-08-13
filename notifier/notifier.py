@@ -11,6 +11,7 @@ import dbus
 import time
 import os
 import socket
+from sys import argv
 from urllib.parse import urlparse
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
@@ -37,15 +38,14 @@ limit = 30
 
 size = (128, 128)
 
-#gi.require_version('AppIndicator3', '0.1')
-#from gi.repository import AppIndicator3
-#from gi.repository import Gtk
-#notifierClass = lambda: GNotifier()
+gi.require_version('AppIndicator3', '0.1')
+from gi.repository import AppIndicator3
+from gi.repository import Gtk
+notifierClass = lambda: GNotifier()
 
-from PyQt4.Qt import QApplication, QIcon
-from sys import argv
-import PyKDE4.kdeui as kdeui
-notifierClass = lambda: KNotifier()
+#from PyQt4.Qt import QApplication, QIcon
+#import PyKDE4.kdeui as kdeui
+#notifierClass = lambda: KNotifier()
 ######
 
 class GNotifier():
@@ -318,6 +318,7 @@ notifier = notifierClass()
 # bring notification daemon in case it's not running
 Notify.init(progname)
 Notify.Notification.new("started " + progname).show()
+Notify.uninit()
 
 DBusGMainLoop(set_as_default=True)
 bus = dbus.SessionBus()
