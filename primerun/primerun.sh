@@ -168,12 +168,19 @@ if [ -e /etc/nixos ]; then
       };
     }
   ')"
+  kernel_compile_h=$(nix-build --no-out-link '<nixpkgs>' -A config.boot.kernelPackages.kernel.dev)/source/include/generated/compile.h
+  kernel_cc_string=`cat ${kernel_compile_h} | grep LINUX_COMPILER | cut -f 2 -d '"'`
+  kernel_cc_version=`echo ${kernel_cc_string} | grep -o '[0-9]\+\.[0-9]\+' | head -n 1`
+  kernel_cc_major=`echo ${kernel_cc_version} | cut -d '.' -f 1`
+  echo $kernel_cc_major
+  exit
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs/nixos> {};
 
     let
       custom = config.boot.kernelPackages;
-    in (pkgs.'$package'.overrideAttrs (oldAttrs: rec {
+      kernel_compile_h=${custom.kernel.dev}/source/include/generated/compile.h
+    in (('$package'.override { stdenv = overrideCC stdenv gcc'$kernel_cc_major'; }).overrideAttrs (oldAttrs: rec {
       kernelVersion = "'$kernel'";
       kernel = custom.kernel.dev;
     })).bin
@@ -192,7 +199,7 @@ else
     }
   ')"
   # needed for arch
-  sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source
+  sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source > /dev/null
   kernel_compile_h=/lib/modules/$kernel/source/include/generated/compile.h
   if [ ! -f $kernel_compile_h ]; then
     echo -e "$red Install kernel headers package"
