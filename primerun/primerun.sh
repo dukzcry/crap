@@ -153,6 +153,14 @@ exec $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/bin/X "\$@"
 EOF
 chmod +x $tmpdir/X
 
+get_major_version()
+{
+  kernel_compile_h=$1
+  kernel_cc_string=`cat ${kernel_compile_h} | grep LINUX_COMPILER | cut -f 2 -d '"'`
+  kernel_cc_version=`echo ${kernel_cc_string} | grep -o '[0-9]\+\.[0-9]\+' | head -n 1`
+  kernel_cc_major=`echo ${kernel_cc_version} | cut -d '.' -f 1`
+}
+
 if [ -e /etc/nixos ]; then
   # complicated to always check non-nixos rules on nixos
   bbswitch="$(nix-build --no-out-link -E '
@@ -193,14 +201,7 @@ else
   ')"
   # needed for arch
   sudo ln -s /lib/modules/$kernel/build /lib/modules/$kernel/source
-  kernel_compile_h=/lib/modules/$kernel/source/include/generated/compile.h
-  if [ ! -f $kernel_compile_h ]; then
-    echo -e "$red Install kernel headers package"
-    exit 1
-  fi
-  kernel_cc_string=`cat ${kernel_compile_h} | grep LINUX_COMPILER | cut -f 2 -d '"'`
-  kernel_cc_version=`echo ${kernel_cc_string} | grep -o '[0-9]\+\.[0-9]\+' | head -n 1`
-  kernel_cc_major=`echo ${kernel_cc_version} | cut -d '.' -f 1`
+  get_major_version /lib/modules/$kernel/source/include/generated/compile.h
   nvidia="$(nix-build --no-out-link -E '
     with import <nixpkgs> {};
 

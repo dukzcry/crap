@@ -3,5 +3,6 @@ A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee 
 This solution will be dropped once Nvidia will add render offload device support.
 
 1. curl https://nixos.org/nix/install | sh
-2. Edit settings at the top of script to match your needs
-3. Run this script as `primerun.sh <your game>`
+2. Install kernel headers package for your currently running kernel (not needed on NixOS)
+3. Edit settings at the top of script to match your needs
+4. Run this script as `primerun.sh <your game>`
