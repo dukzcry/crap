@@ -44,9 +44,8 @@ Section "InputClass"
 EndSection
 
 Section "Module"
-  oad "modesetting"
+  Load "modesetting"
 EndSection
-
 Section "Device"
   Identifier "nvidia"
   Driver "nvidia"
