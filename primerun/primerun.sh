@@ -4,6 +4,7 @@
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
 # for many games you need running window manager, in that case run script which runs both wm and game via this script
 
+### configuration ###
 display=1
 console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
@@ -15,44 +16,45 @@ kernel="$(uname -r)"
 mkdir -p $tmpdir/modules
 cat > $tmpdir/xorg.conf << EOF
 Section "Files"
-    ModulePath "$(nix-build --no-out-link '<nixpkgs>' -A xorg.xf86inputlibinput)/lib/xorg/modules/input"
-    ModulePath "$(nix-build --no-out-link '<nixpkgs>' -A $package.bin)/lib/xorg/modules"
-    ModulePath "$tmpdir/modules"
+  ModulePath "$(nix-build --no-out-link '<nixpkgs>' -A xorg.xf86inputlibinput)/lib/xorg/modules/input"
+  ModulePath "$(nix-build --no-out-link '<nixpkgs>' -A $package.bin)/lib/xorg/modules"
+  ModulePath "$tmpdir/modules"
 EndSection
 
 Section "InputClass"
-        Identifier "libinput pointer catchall"
-        MatchIsPointer "on"
-        MatchDevicePath "/dev/input/event*"
-        Driver "libinput"
+  Identifier "libinput pointer catchall"
+  MatchIsPointer "on"
+  MatchDevicePath "/dev/input/event*"
+  Driver "libinput"
 EndSection
 Section "InputClass"
-        Identifier "libinput keyboard catchall"
-        MatchIsKeyboard "on"
-        MatchDevicePath "/dev/input/event*"
-        Driver "libinput"
+  Identifier "libinput keyboard catchall"
+  MatchIsKeyboard "on"
+  MatchDevicePath "/dev/input/event*"
+  Driver "libinput"
 EndSection
 Section "InputClass"
-        Identifier "libinput touchpad catchall"
-        MatchIsTouchpad "on"
-        MatchDevicePath "/dev/input/event*"
-        Driver "libinput"
-        Option "Tapping" "on"
-        Option "DisableWhileTyping" "off"
-        Option "MiddleEmulation" "on"
+  Identifier "libinput touchpad catchall"
+  MatchIsTouchpad "on"
+  MatchDevicePath "/dev/input/event*"
+  Driver "libinput"
+  Option "Tapping" "on"
+  Option "DisableWhileTyping" "off"
+  Option "MiddleEmulation" "on"
 EndSection
 
 Section "Module"
-    Load "modesetting"
+  oad "modesetting"
 EndSection
 
 Section "Device"
-    Identifier "nvidia"
-    Driver "nvidia"
-    BusID "$busid"
-    Option "AllowEmptyInitialConfiguration"
+  Identifier "nvidia"
+  Driver "nvidia"
+  BusID "$busid"
+  Option "AllowEmptyInitialConfiguration"
 EndSection
 EOF
+### end of configuration ###
 
 red='\033[0;31m'
 if [ ! -d $tmpdir ]; then

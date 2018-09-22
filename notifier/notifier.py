@@ -46,7 +46,7 @@ notifierClass = lambda: GNotifier()
 #from PyQt4.Qt import QApplication, QIcon
 #import PyKDE4.kdeui as kdeui
 #notifierClass = lambda: KNotifier()
-######
+### end of configuration ###
 
 class GNotifier():
     def create_indicator(self, name):
