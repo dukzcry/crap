@@ -1,3 +1,5 @@
+This is really meant for Optimus-based laptops, not desktops.
+
 A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee is complex, slow and has no Vulkan support. Nvidia-xrun doesn't handle some critical issues and also needs to be run from another console.
 
 This solution will be dropped once Nvidia will add render offload device support.
