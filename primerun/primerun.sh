@@ -2,7 +2,6 @@
 
 # if systemd is used and you need sound, login to $console prior https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=747882
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
-# for many games you need running window manager, in that case run script which runs both wm and game via this script
 
 ### configuration ###
 display=1

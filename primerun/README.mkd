@@ -1,10 +1,12 @@
-This is really meant for Optimus-based laptops, not desktops.
+A simple alternative to [nvidia-xrun](https://github.com/Witko/nvidia-xrun).
 
-A simple all-in-one alternative to nvidia-xrun, optirun, primusrun... Bumblebee is complex, slow and has no Vulkan support. Nvidia-xrun doesn't handle some critical issues and also needs to be run from another console.
-
-This solution will be dropped once Nvidia will add render offload device support.
+Features:
+* OpenGL and Vulkan support
+* OpenCL and CUDA support
+* [Running program without switching to console](https://github.com/Witko/nvidia-xrun/issues/4)
+* Behind the scenes package management: e.g. you can use this script on Wayland machine without Nvidia driver installed
 
 1. curl https://nixos.org/nix/install | sh
 2. Install kernel headers package for your currently running kernel (not needed on NixOS)
 3. Edit settings at the top of script to match your needs
-4. Run this script as `primerun.sh <your game>`
+4. Run your program via this script
