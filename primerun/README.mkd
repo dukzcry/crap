@@ -4,7 +4,7 @@ Features:
 * OpenGL and Vulkan support
 * OpenCL and CUDA support
 * [Running program without switching to console](https://github.com/Witko/nvidia-xrun/issues/4)
-* Behind the scenes package management: e.g. you can use this script on Wayland machine without Nvidia driver installed
+* Behind the scenes package management: e.g. you can use this script on pure Wayland setup without Nvidia driver installed
 
 1. curl https://nixos.org/nix/install | sh
 2. Install kernel headers package for your currently running kernel (not needed on NixOS)
