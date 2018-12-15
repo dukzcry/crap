@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env nix-shell
+#!nix-shell -i python3 -p "python3.withPackages(ps: with ps; [ evdev ])"
 
 # bug: while stucked waiting for an input event we can't account new device if such was added
 
