@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p "python3.withPackages(ps: with ps; [ evdev ])"
+#!nix-shell -i python3 -p gobjectIntrospection "python3.withPackages(ps: with ps; [ evdev pygobject3 dbus-python ])"
 
 # bug: while stucked waiting for an input event we can't account new device if such was added
 
@@ -9,11 +9,18 @@ from threading import Timer
 from select import select
 from sys import argv
 from glob import glob
+import threading
 import evdev.ecodes as ecodes
 import evdev,logging,socket,os
 
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GLib
+
 alarm_interval = 600
 throttle_interval = 60
+inhibitors_interval = 3600
 jitter = 10
 no_battery = False
 low_battery_level = range(0, 6)
@@ -61,6 +68,10 @@ def idleHandler(ctx):
     if wakeup(ctx, True):
         logging.warning("wakeup action")
         os.system(wakeup_command)
+        return
+
+    if inhibitors != {}:
+        logging.warning(("sleep prevented by dbus",inhibitors))
         return
 
     if ctx.adapterPresent == 0:
@@ -114,6 +125,21 @@ def devices():
             pass
     return {dev.fd: dev for dev in devices}
 
+service_names = [ "org.freedesktop.ScreenSaver"
+                  ,"org.freedesktop.PowerManagement.Inhibit"
+                  ,"org.mate.SessionManager"
+                  ,"org.gnome.SessionManager" ]
+object_paths = [ "/ScreenSaver"
+                 ,"/org/freedesktop/PowerManagement"
+                 ,"/org/mate/SessionManager"
+                 ,"/org/gnome/SessionManager" ]
+inhibitors = {}
+
+def inhibitorsHandler(ctx):
+        logging.warning("cleaning stale inhibitors")
+        inhibitors = {}
+        ctx.idle_timer.reset()
+
 class Main:
     def main(self):
         self.adapterPresent = adapterPresent()
@@ -124,9 +150,22 @@ class Main:
         if not no_battery:
             self.battery_timer = Watchdog(throttle_interval, batteryHandler, self)
         self.idle_timer = Watchdog(alarm_interval, idleHandler, self, idleStartHandler)
+        inhibitors_timer = Watchdog(inhibitors_interval, inhibitorsHandler, self)
 
+        myT = threading.Thread(target=self.myThread)
+        myT.start()
+
+        DBusGMainLoop(set_as_default=True)
+
+        session_bus = dbus.SessionBus()
+        services = zip(service_names, object_paths)
+        objects = list(map(lambda xy: self.service_init(xy[0], xy[1], session_bus, inhibitors_timer), services))
         logging.warning("started")
 
+        mainloop = GLib.MainLoop()
+        mainloop.run()
+
+    def myThread(self):
         while True:
             reset = False
             devs = devices()
@@ -137,7 +176,7 @@ class Main:
                     for event in devs[fd].read():
                         if event.type == ecodes.EV_KEY and event.value == keyDown or event.type == ecodes.EV_REL and event.code == relX:
                             reset = True
-                            #logging.warning(evdev.categorize(event))
+                            logging.warning(evdev.categorize(event))
                             break
                 except Exception as msg:
                     logging.warning(msg)
@@ -147,6 +186,34 @@ class Main:
             if reset:
                 self.idle_timer.reset()
             sleep(throttle_interval)
+
+    def service_init(self, service_name, object_path, session_bus, inhibitors_timer):
+        class Service(dbus.service.Object):
+            def __init__(self, service_name, object_path):
+                name = dbus.service.BusName(service_name, bus=session_bus)
+                super().__init__(name, object_path)
+            @dbus.service.method(dbus_interface=service_name)
+            def Inhibit(self, app, *args):
+                key = 1
+                while inhibitors.get(key) != None:
+                    key += 1
+                inhibitors.update({key: app})
+                inhibitors_timer.reset()
+                logging.warning(inhibitors)
+                return dbus.UInt32(key)
+            @dbus.service.method(dbus_interface=service_name)
+            def UnInhibit(self, key):
+                inhibitors.pop(key)
+                inhibitors_timer.reset()
+                logging.warning(inhibitors)
+            @dbus.service.method(dbus_interface=service_name)
+            def Uninhibit(self, key):
+                inhibitors.pop(key)
+                inhibitors_timer.reset()
+                logging.warning(inhibitors)
+
+        return Service(service_name, object_path)
+
 
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 sock.bind('\0' + progname)
