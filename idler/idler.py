@@ -71,7 +71,7 @@ def idleHandler(ctx):
         return
 
     if inhibitors != {}:
-        logging.warning(("sleep prevented by dbus",inhibitors))
+        logging.warning("sleep prevented by dbus %s", inhibitors)
         return
 
     if ctx.adapterPresent == 0:
@@ -94,7 +94,7 @@ def batteryHandler(ctx):
     elif ctx.adapterPresent != newAdapterPresent:
         if not wakeup(ctx, False):
             ctx.idle_timer.reset()
-        logging.warning(("adapter", ctx.adapterPresent, newAdapterPresent))
+        logging.warning("adapter %s -> %s", ctx.adapterPresent, newAdapterPresent)
         ctx.adapterPresent = newAdapterPresent
     ctx.battery_timer.new()
 
@@ -136,7 +136,12 @@ object_paths = [ "/ScreenSaver"
 inhibitors = {}
 
 def inhibitorsHandler(ctx):
-        logging.warning("cleaning stale inhibitors")
+        ctx.inhibitors_timer.new()
+        if wakeup(ctx, False):
+            return
+
+        global inhibitors
+        logging.warning("cleaning stale dbus inhibitors %s", inhibitors)
         inhibitors = {}
         ctx.idle_timer.reset()
 
@@ -150,16 +155,16 @@ class Main:
         if not no_battery:
             self.battery_timer = Watchdog(throttle_interval, batteryHandler, self)
         self.idle_timer = Watchdog(alarm_interval, idleHandler, self, idleStartHandler)
-        inhibitors_timer = Watchdog(inhibitors_interval, inhibitorsHandler, self)
+        self.inhibitors_timer = Watchdog(inhibitors_interval, inhibitorsHandler, self)
 
         myT = threading.Thread(target=self.myThread)
         myT.start()
 
         DBusGMainLoop(set_as_default=True)
 
-        session_bus = dbus.SessionBus()
+        self.session_bus = dbus.SessionBus()
         services = zip(service_names, object_paths)
-        objects = list(map(lambda xy: self.service_init(xy[0], xy[1], session_bus, inhibitors_timer), services))
+        objects = list(map(lambda xy: self.service_init(xy[0], xy[1], self), services))
         logging.warning("started")
 
         mainloop = GLib.MainLoop()
@@ -187,10 +192,10 @@ class Main:
                 self.idle_timer.reset()
             sleep(throttle_interval)
 
-    def service_init(self, service_name, object_path, session_bus, inhibitors_timer):
+    def service_init(self, service_name, object_path, ctx):
         class Service(dbus.service.Object):
             def __init__(self, service_name, object_path):
-                name = dbus.service.BusName(service_name, bus=session_bus)
+                name = dbus.service.BusName(service_name, bus=ctx.session_bus)
                 super().__init__(name, object_path)
             @dbus.service.method(dbus_interface=service_name)
             def Inhibit(self, app, *args):
@@ -198,18 +203,17 @@ class Main:
                 while inhibitors.get(key) != None:
                     key += 1
                 inhibitors.update({key: app})
-                inhibitors_timer.reset()
-                logging.warning(inhibitors)
+                ctx.inhibitors_timer.reset()
+                logging.warning("dbus inhibit %s", inhibitors)
                 return dbus.UInt32(key)
             @dbus.service.method(dbus_interface=service_name)
             def UnInhibit(self, key):
                 inhibitors.pop(key)
-                inhibitors_timer.reset()
-                logging.warning(inhibitors)
+                logging.warning("dbus uninhibit %s", inhibitors)
             @dbus.service.method(dbus_interface=service_name)
             def Uninhibit(self, key):
                 inhibitors.pop(key)
-                inhibitors_timer.reset()
+                logging.warning("dbus uninhibit %s", inhibitors)
                 logging.warning(inhibitors)
 
         return Service(service_name, object_path)
