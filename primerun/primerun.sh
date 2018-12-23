@@ -99,13 +99,7 @@ export LD_LIBRARY_PATH="$(nix-build --no-out-link -E '
 
     buildEnv {
       name = "nvidia-libs-32";
-      paths = with pkgsi686Linux; [
-        libglvnd
-        ('$package'.override {
-          libsOnly = true;
-          kernel = null;
-        })
-      ];
+      paths = [ pkgsi686Linux.libglvnd '$package'.lib32 ];
   }')/lib"
 #export PATH="\$(nix-build --no-out-link -E '
 #  with import <nixpkgs> {};
