@@ -141,9 +141,10 @@ def inhibitorsHandler(ctx):
             return
 
         global inhibitors
-        logging.warning("cleaning stale dbus inhibitors %s", inhibitors)
-        inhibitors = {}
-        ctx.idle_timer.reset()
+        if inhibitors != {}:
+            logging.warning("cleaning stale dbus inhibitors %s", inhibitors)
+            inhibitors = {}
+            ctx.idle_timer.reset()
 
 class Main:
     def main(self):
