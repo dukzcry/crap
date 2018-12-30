@@ -182,7 +182,7 @@ class Main:
                     for event in devs[fd].read():
                         if event.type == ecodes.EV_KEY and event.value == keyDown or event.type == ecodes.EV_REL and event.code == relX:
                             reset = True
-                            logging.warning(evdev.categorize(event))
+                            #logging.warning(evdev.categorize(event))
                             break
                 except Exception as msg:
                     logging.warning(msg)
