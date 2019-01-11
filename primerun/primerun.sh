@@ -9,7 +9,7 @@ console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages with "nix-instantiate --eval -E 'with import <nixpkgs> {}; linuxPackages.nvidiaPackages'"
 package="linuxPackages.nvidia_x11"
-busid=$($(nix-build --no-out-link '<nixpkgs>' -A pciutils)/bin/lspci | awk '/3D controller/{gsub(/\./,":",$1); print $1}')
+busid=$($(nix-build --no-out-link '<nixpkgs>' -A pciutils)/bin/lspci | awk '/3D controller|VGA compatible controller: NVIDIA/{gsub(/\./,":",$1); print $1}')
 kernel="$(uname -r)"
 
 mkdir -p $tmpdir/modules
