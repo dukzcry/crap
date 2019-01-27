@@ -140,12 +140,12 @@ EOF
 chmod +x $tmpdir/wrapper
 
 # dixRegisterPrivateKey: Assertion `!global_keys[type].created' failed
-cat > $tmpdir/X << EOF
+#cat > $tmpdir/X << EOF
 #!/bin/sh
-LD_LIBRARY_PATH="$(nix-build --no-out-link '<nixpkgs>' -A libglvnd)/lib"
-exec $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/bin/X "\$@"
-EOF
-chmod +x $tmpdir/X
+#LD_LIBRARY_PATH="$(nix-build --no-out-link '<nixpkgs>' -A libglvnd)/lib"
+#exec $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/bin/X "\$@"
+#EOF
+#chmod +x $tmpdir/X
 
 get_major_version()
 {
@@ -222,7 +222,8 @@ rm $tmpdir/modules/libglamoregl.so
 
 xinit=$(nix-build --no-out-link '<nixpkgs>' -A xorg.xinit)/bin
 # xinit is unsecure
-sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile $tmpdir/X.log vt$console
+#sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $tmpdir/X :$display -config $tmpdir/xorg.conf -logfile $tmpdir/X.log vt$console
+sudo PATH=$xinit:$PATH $xinit/startx $tmpdir/wrapper -- $(nix-build --no-out-link '<nixpkgs>' -A xorg.xorgserver)/bin/X :$display -config $tmpdir/xorg.conf -logfile $tmpdir/X.log vt$console
 sudo chown $USER $XAUTHORITY
 
 for m in nvidia_uvm nvidia_drm nvidia_modeset nvidia
