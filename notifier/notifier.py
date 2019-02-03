@@ -58,7 +58,7 @@ class GNotifier():
     def create_menu(self, indicator, name):
         # hackish, we don't reuse menu
         menu = Gtk.Menu()
-        item = Gtk.MenuItem('Clear ' + name)
+        item = Gtk.MenuItem(label='Clear ' + name)
         separator = Gtk.SeparatorMenuItem()
         item.connect('activate', lambda self: clear(name))
         menu.append(item)
@@ -74,10 +74,10 @@ class GNotifier():
 
     def fill_menu(self, message, indicator, string):
         parent = indicator.get_menu()
-        summary = Gtk.MenuItem(string)
+        summary = Gtk.MenuItem(label=string)
         if message.body:
             submenu = Gtk.Menu()
-            body = Gtk.MenuItem(message.body)
+            body = Gtk.MenuItem(label=message.body)
             submenu.append(body)
             body.show()
             summary.set_submenu(submenu)
@@ -86,8 +86,8 @@ class GNotifier():
 
     def set_icon(self, indicator, path):
         # force icon refresh
-        indicator.set_icon("")
-        indicator.set_icon(path)
+        indicator.set_icon_full("", "")
+        indicator.set_icon_full(path, "")
 
 class KNotifier():
     def __init__(self):
