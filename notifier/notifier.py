@@ -49,8 +49,13 @@ notifierClass = lambda: KNotifier()
 ### end of configuration ###
 
 class GNotifier():
+    def __init__(self):
+        img = Image.new("RGBA", size, (0,0,0,0))
+        path = dir + '_blank_.png'
+        img.save(path)
+
     def create_indicator(self, name):
-        indicator = AppIndicator3.Indicator.new_with_path(progname + name, "", AppIndicator3.IndicatorCategory.APPLICATION_STATUS, dir)
+        indicator = AppIndicator3.Indicator.new_with_path(progname + name, '_blank_', AppIndicator3.IndicatorCategory.APPLICATION_STATUS, dir)
         self.show_icon(indicator, True)
         self.create_menu(indicator, name)
         return indicator
@@ -98,8 +103,8 @@ class KNotifier():
         # don't pull gtk2 from gtk+ plugin
         self.app = QApplication([argv[0], "--style=motif"])
         img = Image.new("RGBA", size, (0,0,0,0))
-        self.path = dir + '_blank_.png'
-        img.save(self.path)
+        path = dir + '_blank_.png'
+        img.save(path)
 
     def create_indicator(self, name):
         indicator = kdeui.KStatusNotifierItem(progname + name, None)
@@ -119,7 +124,7 @@ class KNotifier():
         else:
             # doesn't hide the icon, just gives the hint to tray
             indicator.setStatus(kdeui.KStatusNotifierItem.Passive)
-            self.set_icon(indicator, self.path)
+            self.set_icon(indicator, '_blank_')
 
     def fill_menu(self, message, indicator, string):
         parent = indicator.contextMenu()
