@@ -50,7 +50,7 @@ notifierClass = lambda: KNotifier()
 
 class GNotifier():
     def create_indicator(self, name):
-        indicator = AppIndicator3.Indicator.new(progname + name, "", AppIndicator3.IndicatorCategory.APPLICATION_STATUS)
+        indicator = AppIndicator3.Indicator.new_with_path(progname + name, "", AppIndicator3.IndicatorCategory.APPLICATION_STATUS, dir)
         self.show_icon(indicator, True)
         self.create_menu(indicator, name)
         return indicator
@@ -84,10 +84,14 @@ class GNotifier():
         parent.append(summary)
         summary.show()
 
-    def set_icon(self, indicator, path):
-        # force icon refresh
-        indicator.set_icon_full("", "")
-        indicator.set_icon_full(path, "")
+    def set_icon(self, indicator, name):
+        # delay is needed for icon by name
+        # icon by path works much better, but is not in spec
+        GLib.timeout_add_seconds(3, lambda: (
+          # force icon refresh
+          indicator.set_icon_full("", ""),
+          indicator.set_icon_full(name, "")
+        ))
 
 class KNotifier():
     def __init__(self):
@@ -125,8 +129,8 @@ class KNotifier():
         else:
             parent.addAction(string)
 
-    def set_icon(self, indicator, path):
-        indicator.setIconByPixmap(QIcon(path))
+    def set_icon(self, indicator, name):
+        indicator.setIconByPixmap(QIcon(dir + name + '.png'))
 
 class Message_(object):
     def __init__(self, args, key, time):
@@ -305,7 +309,7 @@ def draw_badge(num, message, indicator):
 
     path = dir + name + '_counter.png'
     img.save(path)
-    notifier.set_icon(indicator, path)
+    notifier.set_icon(indicator, name + '_counter')
 
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 sock.bind('\0' + progname)
