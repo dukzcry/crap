@@ -142,7 +142,7 @@ class Message_(object):
         self.key = key
         self.time = time
         # https://developer.gnome.org/notification-spec/
-        self.app_name = args[0]
+        self.app_name = args[0].lower()
         self.replaces_id = args[1]
         self.app_icon = args[2]
         self.summary = args[3]
