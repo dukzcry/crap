@@ -67,6 +67,10 @@ if [ "$busid" == "" ]; then
   echo -e "$red No Optimus card found"
   exit 1
 fi
+if [ ! -d "$(nix-build --no-out-link -E 'with import <nixpkgs/nixos> {}; config.boot.kernelPackages.kernel.dev')/lib/modules/$kernel" ]; then
+  echo -e "$red There is a mismatch between config.boot.kernelPackages.kernel: $(nix-instantiate --eval --strict -E '(import <nixpkgs/nixos> {}).config.boot.kernelPackages.kernel.dev.version') and currently running kernel: $kernel. Reboot is required."
+  exit 1
+fi
 # module nvidia_drm is in use
 if [ "$(sudo fgconsole)" == "$console" ]; then
   echo -e "$red You need to run $0 from another console"
