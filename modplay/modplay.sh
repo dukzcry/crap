@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell --pure -i sh -p coreutils curl dtrx uade123 openmpt123
+#!nix-shell -i sh -p coreutils curl dtrx uade123 openmpt123
 #xmp
 
 [ "$1" == "" ] && echo "usage: $0 <artist> <file>..." && exit
