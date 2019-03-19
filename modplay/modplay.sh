@@ -6,11 +6,18 @@
 
 TMPDIR=/tmp/modplay
 
+#domain[0]="post.audioscrobbler.com"
+domain[0]="turtle.libre.fm"
+user[0]="dukzcry"
+password[0]=""
+domain[1]="proxy.listenbrainz.org"
+user[1]="dukzcry"
+password[1]=""
+
 auth() {
-        #domain="turtle.libre.fm"
-        domain="post.audioscrobbler.com"
-        user="dukzcry"
-        password=""
+        domain=$1
+        user=$2
+        password=$3
 
         timestamp=`date +%s`
         auth=$(echo -n `echo -n $password|md5sum|cut -d ' ' -f 1`$timestamp|md5sum|cut -d ' ' -f 1)
@@ -38,7 +45,11 @@ if [ ! -d "$i" ]; then
                 openmpt123 "$i"
                 time=$((`date +%s` - $start))
         fi
-        [ $time -ge 30 ] && scrobble "$session" "$artist" "$i" $time
+        if [ $time -ge 30 ]; then
+                for j in ${!sessions[@]}; do
+                        scrobble "${sessions[$j]}" "$artist" "$i" $time
+                done
+        fi
 else
         (cd "$i" && play)
 fi
@@ -47,7 +58,11 @@ done
 
 artist=$1; shift
 curdir=`pwd`
-session=`auth`
+sessions=()
+for i in ${!domain[@]}; do
+        session=`auth ${domain[$i]} ${user[$i]} ${password[$i]}`
+        sessions[$i]=$session
+done
 
 mkdir -p $TMPDIR 2>/dev/null
 cd `mktemp -d`
