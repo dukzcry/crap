@@ -38,14 +38,14 @@ limit = 30
 
 size = (128, 128)
 
-#gi.require_version('AppIndicator3', '0.1')
-#from gi.repository import AppIndicator3
-#from gi.repository import Gtk
-#notifierClass = lambda: GNotifier()
+gi.require_version('AppIndicator3', '0.1')
+from gi.repository import AppIndicator3
+from gi.repository import Gtk
+notifierClass = lambda: GNotifier()
 
-from PyQt4.Qt import QApplication, QIcon
-import PyKDE4.kdeui as kdeui
-notifierClass = lambda: KNotifier()
+#from PyQt4.Qt import QApplication, QIcon
+#import PyKDE4.kdeui as kdeui
+#notifierClass = lambda: KNotifier()
 ### end of configuration ###
 
 class GNotifier():
