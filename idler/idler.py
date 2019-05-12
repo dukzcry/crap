@@ -29,9 +29,9 @@ adapter_path = "/sys/class/power_supply/ADP?/"
 progname = "idler"
 log_file = "/tmp/"+progname+".log"
 #ac_command = "sudo pkill chvt; (sudo chvt 20 &)"
-ac_command = "sudo pkill physlock; (sudo physlock -d)"
-wakeup_command = ac_command
-battery_command = ac_command + "; sudo systemctl suspend"
+ac_command = ""
+wakeup_command = "sudo pkill physlock; (sudo physlock -d)"
+battery_command = wakeup_command + "; sudo systemctl suspend"
 low_battery_command = battery_command
 
 keyDown = evdev.events.KeyEvent.key_down
