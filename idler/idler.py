@@ -27,7 +27,9 @@ low_battery_level = range(0, 6)
 battery_path = "/sys/class/power_supply/BAT?/"
 adapter_path = "/sys/class/power_supply/ADP?/"
 progname = "idler"
-log_file = "/tmp/"+progname+".log"
+dir = "/tmp/"+progname+"/"
+log_file = dir+"idler.log"
+pid_file = dir+"idler.pid"
 ac_command = "sudo chvt 20"
 #ac_command = "sudo physlock -d"
 wakeup_command = ac_command
@@ -223,6 +225,9 @@ class Main:
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 sock.bind('\0' + progname)
 
+if not os.path.exists(dir):
+    os.makedirs(dir)
+
 program = Main()
 if len(argv) == 2 and argv[1] == "-f":
     program.main()
@@ -230,3 +235,7 @@ else:
     pid = os.fork()
     if pid == 0:
         program.main()
+    else:
+        f = open(pid_file,"w+")
+        f.write(str(pid))
+        f.close()
