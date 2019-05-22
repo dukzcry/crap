@@ -25,7 +25,7 @@ from fontconfig import query
 ### configuration ###
 progname = "notifier"
 
-dir = "/tmp/" + progname + "/"
+dir = "/var/lib/" + progname + "/"
 
 fonts = query(family='DejaVu Sans')
 for i in range(0,len(fonts)):
