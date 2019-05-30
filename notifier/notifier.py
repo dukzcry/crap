@@ -254,9 +254,9 @@ def has_icon(icon):
     sizes = icon_theme.get_icon_sizes(icon)
     if sizes != []:
         # svg icon only
-        if size == [-1]:
-            return False
-        else:
+        #if sizes == [-1]:
+        #    return False
+        #else:
             return True
 
     o = urlparse(icon)
@@ -340,8 +340,6 @@ metadata = MetaData(engine)
 metadata.reflect(bind=engine)
 Session = sessionmaker(bind=engine)
 
-#icon_theme = IconTheme.get_default()
-# wayland compat
 icon_theme = IconTheme()
 icon_theme.set_custom_theme("hicolor")
 
