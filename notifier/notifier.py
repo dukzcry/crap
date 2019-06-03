@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig ])"
+#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig cairosvg ])"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -21,6 +21,7 @@ from sqlalchemy.orm import *
 
 from PIL import Image,ImageFont,ImageDraw
 from fontconfig import query
+import cairosvg
 
 ### configuration ###
 progname = "notifier"
@@ -253,10 +254,6 @@ def has_icon(icon):
 
     sizes = icon_theme.get_icon_sizes(icon)
     if sizes != []:
-        # svg icon only
-        #if sizes == [-1]:
-        #    return False
-        #else:
             return True
 
     o = urlparse(icon)
@@ -273,6 +270,7 @@ def has_icon(icon):
 def save_icon(message):
     icon = message.app_icon
     sizes = icon_theme.get_icon_sizes(icon)
+    svg = list(filter(lambda x: x == -1, sizes)) == [-1]
     if sizes != []:
         s = min(sizes, key=lambda x: abs(x-size[0]))
         path = icon_theme.lookup_icon(icon, s, 0).get_filename()
@@ -280,12 +278,17 @@ def save_icon(message):
         path = urlparse(icon).path
 
     try:
-        img = Image.open(path)
-        img = img.resize(size)
+        if not svg:
+            img = Image.open(path)
+            img = img.resize(size)
     except Exception:
         img = Image.new("RGBA", size, (0,0,0,0))
 
-    img.save(dir + message.name + '.png')
+    file = dir + message.name + '.png'
+    if svg:
+        cairosvg.svg2png(url=path, write_to=file, parent_width=size[0], parent_height=size[1])
+    else:
+        img.save(file)
 
 def draw_badge(num, message, indicator):
     name = message.name
@@ -341,7 +344,7 @@ metadata.reflect(bind=engine)
 Session = sessionmaker(bind=engine)
 
 icon_theme = IconTheme()
-icon_theme.set_custom_theme("hicolor")
+icon_theme = IconTheme.get_default()
 
 mappings = {}
 
