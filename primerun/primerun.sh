@@ -4,7 +4,7 @@
 # if you can't stand cursor bug, start this script from console, not another X https://bugs.launchpad.net/ubuntu/+source/plasma-workspace/+bug/1684240
 
 ### configuration ###
-display=1
+display=2
 console=1
 tmpdir=$XDG_RUNTIME_DIR/nvidia
 # see alternative packages with "nix-instantiate --eval -E 'with import <nixpkgs> {}; linuxPackages.nvidiaPackages'"
