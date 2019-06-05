@@ -6,13 +6,15 @@
 
 TMPDIR=/tmp/modplay
 
-#domain[0]="post.audioscrobbler.com"
-domain[0]="turtle.libre.fm"
+domain[0]="post.audioscrobbler.com"
 user[0]="dukzcry"
 password[0]=""
-domain[1]="proxy.listenbrainz.org"
+domain[1]="turtle.libre.fm"
 user[1]="dukzcry"
 password[1]=""
+domain[2]="proxy.listenbrainz.org"
+user[2]="dukzcry"
+password[2]=""
 
 auth() {
         domain=$1
