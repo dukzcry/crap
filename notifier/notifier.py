@@ -23,6 +23,8 @@ from PIL import Image,ImageFont,ImageDraw
 from fontconfig import query
 import cairosvg
 
+import logging
+
 ### configuration ###
 progname = "notifier"
 
@@ -368,6 +370,9 @@ except Exception as msg:
     print(("exc start",msg))
 finally:
     session_.close()
+
+#logging.basicConfig(format="%(asctime)s %(message)s", filename=dir + 'notifier.log')
+#logging.getLogger().addHandler(logging.StreamHandler())
 
 mainloop = GLib.MainLoop()
 if len(argv) == 2 and argv[1] == "-f":
