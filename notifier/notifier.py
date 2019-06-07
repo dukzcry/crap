@@ -33,7 +33,7 @@ dir = "/var/lib/" + progname + "/"
 fonts = query(family='DejaVu Sans')
 for i in range(0,len(fonts)):
     if fonts[i].fontformat == 'TrueType' and [item for item in fonts[i].style if 'Bold' in item] != []:
-        #print(fonts[i].family)
+        #logging.warning(fonts[i].family)
         fontpath = fonts[i].file
         break
 
@@ -194,11 +194,11 @@ def notifications(bus, message):
                 draw_badge(session.query(Message).count(), message, indicator)
             except Exception as msg:
                 session.rollback()
-                print(("exc notifications",msg,args))
+                logging.warning(("exc notifications",msg,args))
             finally:
                 session.close()
     except Exception as msg:
-        print(msg)
+        logging.warning(msg)
 
 def excess(name, message, indicator):
     if limit == 0:
@@ -214,7 +214,7 @@ def excess(name, message, indicator):
                 menu_item(item, indicator)
     except Exception as msg:
         session.rollback()
-        print(("exc excess",msg))
+        logging.warning(("exc excess",msg))
     finally:
         session.close()
 
@@ -236,7 +236,7 @@ def clear(name, items=None):
         session.commit()
     except Exception as msg:
         session.rollback()
-        print(("exc clear",msg))
+        logging.warning(("exc clear",msg))
     finally:
         session.close()
 
@@ -367,12 +367,12 @@ try:
             draw_badge(i, m, indicator)
 except Exception as msg:
     session_.rollback()
-    print(("exc start",msg))
+    logging.warning(("exc start",msg))
 finally:
     session_.close()
 
-#logging.basicConfig(format="%(asctime)s %(message)s", filename=dir + 'notifier.log')
-#logging.getLogger().addHandler(logging.StreamHandler())
+logging.basicConfig(format="%(asctime)s %(message)s", filename=dir + 'notifier.log')
+logging.getLogger().addHandler(logging.StreamHandler())
 
 mainloop = GLib.MainLoop()
 if len(argv) == 2 and argv[1] == "-f":
