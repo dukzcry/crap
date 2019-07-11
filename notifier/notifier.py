@@ -185,7 +185,7 @@ def notifications(bus, message):
                 table.create()
                 mapper(Message, table)
             timetime = time.time()
-            message = Message(args, int(str(timetime).replace('.','')), int(timetime))
+            message = Message(args, int(round(timetime * 1000)), int(timetime))
             menu_item(message, indicator)
             session = Session()
             try:
