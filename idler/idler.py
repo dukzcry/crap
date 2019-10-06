@@ -127,14 +127,19 @@ def devices():
             pass
     return {dev.fd: dev for dev in devices}
 
-service_names = [ "org.freedesktop.ScreenSaver"
-                  ,"org.freedesktop.PowerManagement.Inhibit"
-                  ,"org.mate.SessionManager"
-                  ,"org.gnome.SessionManager" ]
-object_paths = [ "/ScreenSaver"
-                 ,"/org/freedesktop/PowerManagement"
-                 ,"/org/mate/SessionManager"
-                 ,"/org/gnome/SessionManager" ]
+# https://chromium.googlesource.com/chromium/src/+/master/services/device/wake_lock/power_save_blocker/power_save_blocker_x11.cc
+# https://github.com/videolan/vlc/blob/master/modules/misc/inhibit/dbus.c
+# https://hg.mozilla.org/mozilla-central/file/tip/widget/gtk/WakeLockListener.cpp
+api_names = [
+# GNOME
+("org.gnome.SessionManager","org.gnome.SessionManager","/org/gnome/SessionManager"),
+# KDE Chrome
+("org.freedesktop.PowerManagement","org.freedesktop.PowerManagement.Inhibit","/org/freedesktop/PowerManagement/Inhibit"),
+# KDE VLC
+("org.freedesktop.PowerManagement.Inhibit","org.freedesktop.PowerManagement.Inhibit","/org/freedesktop/PowerManagement"),
+# KDE Firefox
+("org.freedesktop.ScreenSaver","org.freedesktop.ScreenSaver","/ScreenSaver"),
+    ]
 inhibitors = {}
 
 def inhibitorsHandler(ctx):
@@ -166,8 +171,7 @@ class Main:
         DBusGMainLoop(set_as_default=True)
 
         self.session_bus = dbus.SessionBus()
-        services = zip(service_names, object_paths)
-        objects = list(map(lambda xy: self.service_init(xy[0], xy[1], self), services))
+        objects = list(map(lambda xy: self.service_init(xy[0], xy[1], xy[2], self), api_names))
         logging.warning("started")
 
         mainloop = GLib.MainLoop()
@@ -195,12 +199,12 @@ class Main:
                 self.idle_timer.reset()
             sleep(throttle_interval)
 
-    def service_init(self, service_name, object_path, ctx):
+    def service_init(self, service_name, interface_name, object_path, ctx):
         class Service(dbus.service.Object):
-            def __init__(self, service_name, object_path):
+            def __init__(self, service_name, interface_name, object_path):
                 name = dbus.service.BusName(service_name, bus=ctx.session_bus)
                 super().__init__(name, object_path)
-            @dbus.service.method(dbus_interface=service_name)
+            @dbus.service.method(dbus_interface=interface_name)
             def Inhibit(self, app, *args):
                 key = 1
                 while inhibitors.get(key) != None:
@@ -209,17 +213,17 @@ class Main:
                 ctx.inhibitors_timer.reset()
                 logging.warning("dbus inhibit %s", inhibitors)
                 return dbus.UInt32(key)
-            @dbus.service.method(dbus_interface=service_name)
+            @dbus.service.method(dbus_interface=interface_name)
             def UnInhibit(self, key):
                 inhibitors.pop(key)
                 logging.warning("dbus uninhibit %s", inhibitors)
-            @dbus.service.method(dbus_interface=service_name)
+            @dbus.service.method(dbus_interface=interface_name)
             def Uninhibit(self, key):
                 inhibitors.pop(key)
                 logging.warning("dbus uninhibit %s", inhibitors)
                 logging.warning(inhibitors)
 
-        return Service(service_name, object_path)
+        return Service(service_name, interface_name, object_path)
 
 
 sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
