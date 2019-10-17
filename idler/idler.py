@@ -35,6 +35,7 @@ ac_command = "sudo chvt 20"
 wakeup_command = ac_command
 battery_command = wakeup_command + "; sudo systemctl suspend"
 low_battery_command = battery_command
+prevent_sleep = "-"
 
 keyDown = evdev.events.KeyEvent.key_down
 relX = next((k for k, v in ecodes.REL.items() if v == "REL_X"), None)
@@ -70,6 +71,10 @@ def idleHandler(ctx):
     if wakeup(ctx, True):
         logging.warning("wakeup action")
         os.system(wakeup_command)
+        return
+
+    if not os.system(prevent_sleep):
+        logging.warning("sleep prevented by user command")
         return
 
     if inhibitors != {}:
