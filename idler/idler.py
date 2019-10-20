@@ -35,7 +35,7 @@ ac_command = "sudo chvt 20"
 wakeup_command = ac_command
 battery_command = wakeup_command + "; sudo systemctl suspend"
 low_battery_command = battery_command
-prevent_sleep = "-"
+prevent_sleep = "file -E /dev/snd/by-id/usb-Nektar_Impact_GX61-00"
 
 keyDown = evdev.events.KeyEvent.key_down
 relX = next((k for k, v in ecodes.REL.items() if v == "REL_X"), None)
@@ -73,7 +73,7 @@ def idleHandler(ctx):
         os.system(wakeup_command)
         return
 
-    if not os.system(prevent_sleep):
+    if os.system(prevent_sleep) == 0:
         logging.warning("sleep prevented by user command")
         return
 
