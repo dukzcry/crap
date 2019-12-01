@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 python3Packages.pykde4 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig cairosvg ])"
+#!nix-shell -i python3 -p gobjectIntrospection "[ libnotify libappindicator-gtk3 ]" "python3.withPackages (ps: with ps; [ pygobject3 dbus-python sqlalchemy pillow python-fontconfig cairosvg ])"
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -41,14 +41,14 @@ limit = 30
 
 size = (128, 128)
 
-#gi.require_version('AppIndicator3', '0.1')
-#from gi.repository import AppIndicator3
-#from gi.repository import Gtk
-#notifierClass = lambda: GNotifier()
+gi.require_version('AppIndicator3', '0.1')
+from gi.repository import AppIndicator3
+from gi.repository import Gtk
+notifierClass = lambda: GNotifier()
 
-from PyQt4.Qt import QApplication, QIcon
-import PyKDE4.kdeui as kdeui
-notifierClass = lambda: KNotifier()
+#from PyQt4.Qt import QApplication, QIcon
+#import PyKDE4.kdeui as kdeui
+#notifierClass = lambda: KNotifier()
 ### end of configuration ###
 
 class GNotifier():
