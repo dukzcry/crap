@@ -1,4 +1,4 @@
-/* Written by Artem Falcon <lomka@gero.in> */
+/* Written by Artem Falcon <dukzcry@ya.ru> */
 
 #include <LayoutBuilder.h>
 #include "MainWindow.h"

@@ -321,9 +321,6 @@ def draw_badge(num, message, indicator):
     img.save(path)
     notifier.set_icon(indicator, name + '_counter')
 
-sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-sock.bind('\0' + progname)
-
 if not os.path.exists(dir):
     os.makedirs(dir)
 
@@ -375,9 +372,4 @@ logging.basicConfig(format="%(asctime)s %(message)s", filename=dir + 'notifier.l
 logging.getLogger().addHandler(logging.StreamHandler())
 
 mainloop = GLib.MainLoop()
-if len(argv) == 2 and argv[1] == "-f":
-    mainloop.run()
-else:
-    pid = os.fork()
-    if pid == 0:
-        mainloop.run()
+mainloop.run()
