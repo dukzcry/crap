@@ -1,4 +1,4 @@
-/* Written by Artem Falcon <dukzcry@ya.ru> */
+/* Written by Artem Lukyanov <dukzcry@ya.ru> */
 
 #ifndef _KERNEL_MODE
 #error "They only support kernel mode ACPI. Sigh :("
