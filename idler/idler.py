@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p gobjectIntrospection "python3.withPackages(ps: with ps; [ evdev pygobject3 dbus-python ])"
+#!nix-shell -i python3 -p gobject-introspection "python3.withPackages(ps: with ps; [ evdev pygobject3 dbus-python ])"
 
 # bug: while stucked waiting for an input event we can't account new device if such was added
 
