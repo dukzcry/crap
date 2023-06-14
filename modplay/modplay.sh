@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i sh -p coreutils curl dtrx uade123 openmpt123
+#!nix-shell -i sh -p coreutils curl dtrx uade123 openmpt123 sidplayfp
 #xmp
 
 [ "$1" == "" ] && echo "usage: $0 <artist> <file>..." && exit
@@ -46,6 +46,10 @@ if [ ! -d "$i" ]; then
                 #xmp "$i"
                 openmpt123 "$i"
                 time=$((`date +%s` - $start))
+                if [ $time -le 5 ]; then
+                  sidplayfp "$i"
+                  time=$((`date +%s` - $start))
+                fi
         fi
         if [ $time -ge 30 ]; then
                 for j in ${!sessions[@]}; do
