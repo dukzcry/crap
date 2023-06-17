@@ -47,7 +47,7 @@ if [ ! -d "$i" ]; then
                 openmpt123 "$i"
                 time=$((`date +%s` - $start))
                 if [ $time -le 5 ]; then
-                  sidplayfp "$i"
+                  sidplayfp -t05:00 "$i"
                   time=$((`date +%s` - $start))
                 fi
         fi
